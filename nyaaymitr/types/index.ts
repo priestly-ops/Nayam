@@ -1,0 +1,1 @@
+export interface Lawyer { id:string; name:string; specialization:string; experience:number; consultationFee:number; languages:string[]; } export interface Appointment { id:string; lawyerId:string; clientId:string; date:string; mode:'video'|'physical'; status:'scheduled'|'completed'|'cancelled'; }
