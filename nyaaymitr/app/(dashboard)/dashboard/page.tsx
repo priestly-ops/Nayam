@@ -28,12 +28,12 @@ export default function DashboardPage() {
   }
 
   return (
-    <main className="relative min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
+    <main className="relative min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-cream md:px-10">
       <button
         type="button"
         onClick={handleBack}
         aria-label="Back to previous page"
-        className="fixed left-5 top-5 z-[9999] inline-flex items-center gap-2 rounded-full bg-nyaay-saffron px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+        className="fixed left-5 top-5 z-[9999] inline-flex items-center gap-2 rounded-full bg-nyaay-saffron px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:bg-nyaay-saffron/90 active:bg-nyaay-saffron/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
       >
         <ArrowLeft className="h-4 w-4" aria-hidden="true" />
         <span>Back</span>
@@ -50,7 +50,7 @@ export default function DashboardPage() {
             {actions.map((action) => {
               const Icon = action.icon;
               return (
-                <a key={action.title} href={action.href} className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
+                <a key={action.title} href={action.href} className="rounded-3xl bg-white p-5 text-nyaay-navy shadow-card ring-1 ring-nyaay-border/70">
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-nyaay-saffron"><Icon className="h-6 w-6" /></div>
                   <p className="font-bold">{action.title}</p>
                   <p className="mt-1 text-sm text-nyaay-muted">Continue securely</p>
@@ -61,7 +61,7 @@ export default function DashboardPage() {
           <NotificationPanel />
         </div>
         <aside className="space-y-6">
-          <div className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
+          <div className="rounded-3xl bg-white p-5 text-nyaay-navy shadow-card ring-1 ring-nyaay-border/70">
             <p className="text-sm font-semibold text-nyaay-muted">Upcoming appointment</p>
             {loading ? <h2 className="mt-2 font-display text-2xl font-bold">Loading...</h2> : null}
             {!loading && nextAppointment ? (

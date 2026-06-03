@@ -29,8 +29,8 @@ export function BackButton({
 
   const classes =
     variant === 'floating'
-      ? 'inline-flex items-center gap-2 rounded-full bg-nyaay-saffron px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
-      : 'inline-flex items-center gap-2 rounded-2xl border border-nyaay-border bg-white px-4 py-2 text-sm font-bold text-nyaay-navy shadow-card transition hover:bg-nyaay-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron';
+      ? 'inline-flex items-center gap-2 rounded-full bg-nyaay-saffron px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:bg-nyaay-saffron/90 active:bg-nyaay-saffron/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white'
+      : 'inline-flex items-center gap-2 rounded-2xl border border-nyaay-border bg-white px-4 py-2 text-sm font-bold text-nyaay-navy shadow-card transition hover:bg-nyaay-cream active:bg-nyaay-cream/80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron';
 
   return (
     <button
