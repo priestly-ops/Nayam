@@ -11,29 +11,43 @@ export function PaymentProofUploader({ appointmentId }: { appointmentId?: string
   const [utr, setUtr] = useState('');
   const [amount, setAmount] = useState('1000');
   const [status, setStatus] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+
+  function validatePaymentForm() {
+    if (!appointmentId) return 'Create an appointment before submitting payment proof.';
+    if (!utr.trim() || utr.trim().length < 8) return 'Please enter a valid UTR or transaction reference.';
+    if (!amount || Number(amount) <= 0) return 'Please enter a valid amount paid.';
+    if (!file) return 'Please choose a payment screenshot first.';
+    if (file.size > 5 * 1024 * 1024) return 'Payment proof file must be under 5 MB.';
+    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) return 'Upload PNG, JPG, JPEG, or PDF only.';
+    return null;
+  }
 
   async function handleUpload() {
-    if (!appointmentId) {
-      setStatus('Create an appointment before submitting payment proof.');
+    const validationError = validatePaymentForm();
+    if (validationError) {
+      setStatus(validationError);
       return;
     }
-    if (!file || !utr) {
-      setStatus('Please add UTR and choose a screenshot first.');
-      return;
-    }
+
     try {
-      const path = await uploadPaymentProof(file);
+      setUploading(true);
+      setStatus(null);
+      const path = await uploadPaymentProof(file!, appointmentId!);
       await submitUpiPaymentProof({
-        appointmentId,
+        appointmentId: appointmentId!,
         amount: Number(amount),
         upiId: 'nyaaymitr@upi',
         upiPayeeName: 'NyaayMitr',
-        upiTransactionRef: utr,
+        upiTransactionRef: utr.trim(),
         paymentScreenshotPath: path,
       });
       setStatus('Payment proof submitted for verification.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Upload failed');
+    } finally {
+      setUploading(false);
     }
   }
 
@@ -57,7 +71,9 @@ export function PaymentProofUploader({ appointmentId }: { appointmentId?: string
         {file ? file.name : 'Upload payment screenshot'}
         <input type="file" className="sr-only" accept="image/png,image/jpeg,application/pdf" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
       </label>
-      <button type="button" onClick={handleUpload} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card">Submit payment proof</button>
+      <button type="button" disabled={uploading || !appointmentId} onClick={handleUpload} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card disabled:cursor-not-allowed disabled:opacity-60">
+        {uploading ? 'Submitting...' : 'Submit payment proof'}
+      </button>
       {status ? <p className="mt-3 text-sm text-nyaay-muted">{status}</p> : null}
     </section>
   );
