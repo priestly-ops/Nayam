@@ -1,7 +1,15 @@
+'use client';
+
+import { BackButton } from '@/components/common/BackButton';
+
 export default function LawyerProfilePage() {
   return (
-    <main className="min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
-      <section className="mx-auto max-w-5xl space-y-6">
+    <main className="relative min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
+      <div className="fixed left-5 top-5 z-[9999]">
+        <BackButton fallbackHref="/lawyers" label="Back" variant="floating" />
+      </div>
+
+      <section className="mx-auto max-w-5xl space-y-6 pt-14">
         <div className="rounded-3xl bg-white p-6 shadow-card ring-1 ring-nyaay-border/70">
           <p className="text-sm font-semibold uppercase tracking-wide text-nyaay-saffron">Verified Advocate</p>
           <h1 className="mt-2 font-display text-4xl font-bold">Advocate Profile</h1>
