@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { AlertTriangle, FileText, PhoneCall, Scale, ShieldCheck } from 'lucide-react';
+import { BackButton } from '@/components/common/BackButton';
 
 const supportOptions = [
   {
@@ -24,8 +25,12 @@ const supportOptions = [
 
 export default function LegalAidPage() {
   return (
-    <main className="min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
-      <section className="mx-auto max-w-6xl space-y-6">
+    <main className="relative min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
+      <div className="fixed left-5 top-5 z-[9999]">
+        <BackButton fallbackHref="/dashboard" label="Back" variant="floating" />
+      </div>
+
+      <section className="mx-auto max-w-6xl space-y-6 pt-14">
         <header className="rounded-3xl bg-nyaay-navy p-6 text-white shadow-soft md:p-8">
           <div className="flex items-start gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-nyaay-saffron text-white">
