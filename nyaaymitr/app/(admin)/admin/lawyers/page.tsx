@@ -3,6 +3,11 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
+type LawyerProfile = {
+  full_name: string | null;
+  email: string | null;
+};
+
 type PendingLawyer = {
   id: string;
   bar_council_id: string;
@@ -10,8 +15,19 @@ type PendingLawyer = {
   city: string;
   state: string;
   is_verified: boolean;
-  profiles?: { full_name: string | null; email: string | null } | null;
+  profiles?: LawyerProfile | null;
 };
+
+type PendingLawyerRow = Omit<PendingLawyer, 'profiles'> & {
+  profiles?: LawyerProfile | LawyerProfile[] | null;
+};
+
+function normalizePendingLawyer(row: PendingLawyerRow): PendingLawyer {
+  return {
+    ...row,
+    profiles: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles ?? null,
+  };
+}
 
 export default function AdminLawyersPage() {
   const [lawyers, setLawyers] = useState<PendingLawyer[]>([]);
@@ -24,7 +40,8 @@ export default function AdminLawyersPage() {
       .select('id, bar_council_id, bar_council_state, city, state, is_verified, profiles:profile_id(full_name,email)')
       .eq('is_verified', false)
       .order('created_at', { ascending: false });
-    setLawyers((data ?? []) as PendingLawyer[]);
+
+    setLawyers(((data ?? []) as PendingLawyerRow[]).map(normalizePendingLawyer));
     setLoading(false);
   }
 
