@@ -1,15 +1,34 @@
 import { NextResponse } from 'next/server';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 
+function getNextPath(next: string | null) {
+  if (!next) return '/dashboard';
+
+  try {
+    const value = decodeURIComponent(next);
+    if (value.startsWith('/') && !value.startsWith('//')) return value;
+  } catch {
+    return '/dashboard';
+  }
+
+  return '/dashboard';
+}
+
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
-  const next = requestUrl.searchParams.get('next') ?? '/dashboard';
+  const next = getNextPath(requestUrl.searchParams.get('next'));
 
-  if (code) {
-    const supabase = await createSupabaseServerClient();
-    await supabase.auth.exchangeCodeForSession(code);
+  if (!code) {
+    return NextResponse.redirect(new URL('/login', requestUrl.origin));
   }
 
-  return NextResponse.redirect(new URL(next, request.url));
+  const supabase = await createSupabaseServerClient();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+  if (error) {
+    return NextResponse.redirect(new URL('/login', requestUrl.origin));
+  }
+
+  return NextResponse.redirect(new URL(next, requestUrl.origin));
 }
