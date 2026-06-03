@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { DM_Sans, Noto_Sans_Devanagari, Playfair_Display } from 'next/font/google';
 import { ErrorBoundary } from '@/components/common/ErrorBoundary';
 import './globals.css';
@@ -10,6 +10,9 @@ const notoDevanagari = Noto_Sans_Devanagari({ subsets: ['devanagari'], variable:
 export const metadata: Metadata = {
   title: 'NyaayMitr',
   description: 'Secure legal consultation and advocate directory platform',
+};
+
+export const viewport: Viewport = {
   themeColor: '#132240',
 };
 
@@ -20,7 +23,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <a href="#main-content" className="skip-to-main">
           Skip to main content
         </a>
-        <ErrorBoundary>{children}</ErrorBoundary>
+        <div id="main-content" tabIndex={-1}>
+          <ErrorBoundary>{children}</ErrorBoundary>
+        </div>
       </body>
     </html>
   );
