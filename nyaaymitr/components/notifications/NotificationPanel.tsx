@@ -20,7 +20,7 @@ export function NotificationPanel() {
         {notifications.slice(0, 5).map((item) => (
           <div key={item.id} className="rounded-2xl bg-nyaay-surface p-3">
             <p className="text-sm font-bold text-nyaay-navy">{item.title}</p>
-            <p className="mt-1 text-xs text-nyaay-muted">{item.message}</p>
+            <p className="mt-1 text-xs text-nyaay-muted">{item.body}</p>
           </div>
         ))}
       </div>
