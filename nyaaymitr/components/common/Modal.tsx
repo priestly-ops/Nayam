@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 interface ModalProps {
@@ -23,75 +23,75 @@ export function Modal({
   const modalRef = useRef<HTMLDivElement>(null);
   const previousActiveElement = useRef<HTMLElement | null>(null);
 
-  // Track previously focused element
   useEffect(() => {
     if (isOpen) {
       previousActiveElement.current = document.activeElement as HTMLElement;
     }
   }, [isOpen]);
 
-  // Focus trap and keyboard handling
   useEffect(() => {
     if (!isOpen || !modalRef.current) return;
 
     const modal = modalRef.current;
+    const getFocusableElements = () =>
+      Array.from(
+        modal.querySelectorAll<HTMLElement>(
+          'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )
+      ).filter((element) => !element.hasAttribute('aria-hidden'));
 
-    // Move focus to modal when opened
-    const focusableElements = modal.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-    );
+    const focusableElements = getFocusableElements();
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 
-    // Set initial focus to close button or first focusable element
     if (showCloseButton) {
       const closeButton = modal.querySelector<HTMLButtonElement>('[aria-label="Close"]');
       closeButton?.focus();
     } else if (firstElement) {
       firstElement.focus();
+    } else {
+      modal.focus();
     }
 
-    // Handle keyboard events
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Close modal on Escape
-      if (e.key === 'Escape') {
-        e.preventDefault();
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.preventDefault();
         onClose();
         return;
       }
 
-      // Focus trap: prevent Tab from leaving modal
-      if (e.key === 'Tab') {
-        if (e.shiftKey) {
-          // Shift+Tab
-          if (document.activeElement === firstElement) {
-            e.preventDefault();
-            lastElement?.focus();
-          }
-        } else {
-          // Tab
-          if (document.activeElement === lastElement) {
-            e.preventDefault();
-            firstElement?.focus();
-          }
-        }
+      if (event.key !== 'Tab') return;
+
+      const currentFocusableElements = getFocusableElements();
+      const currentFirstElement = currentFocusableElements[0];
+      const currentLastElement = currentFocusableElements[currentFocusableElements.length - 1];
+
+      if (!currentFirstElement || !currentLastElement) {
+        event.preventDefault();
+        modal.focus();
+        return;
+      }
+
+      if (event.shiftKey && document.activeElement === currentFirstElement) {
+        event.preventDefault();
+        currentLastElement.focus();
+      }
+
+      if (!event.shiftKey && document.activeElement === currentLastElement) {
+        event.preventDefault();
+        currentFirstElement.focus();
       }
     };
 
     modal.addEventListener('keydown', handleKeyDown);
 
-    // Prevent body scroll when modal open
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
 
     return () => {
       modal.removeEventListener('keydown', handleKeyDown);
       document.body.style.overflow = originalOverflow;
-
-      // Restore focus to previously focused element
-      if (previousActiveElement.current) {
-        previousActiveElement.current.focus();
-      }
+      previousActiveElement.current?.focus();
     };
   }, [isOpen, onClose, showCloseButton]);
 
@@ -105,40 +105,38 @@ export function Modal({
 
   return (
     <>
-      {/* Backdrop */}
       <div
         className="fixed inset-0 z-40 bg-black/50 transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
-      {/* Modal */}
       <div
         ref={modalRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
+        tabIndex={-1}
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
-        <div className={`${sizeClasses[size]} w-full bg-white rounded-3xl shadow-lg overflow-hidden`}>
-          {/* Header */}
+        <div className={`${sizeClasses[size]} w-full overflow-hidden rounded-3xl bg-white shadow-lg`}>
           <div className="flex items-center justify-between border-b border-nyaay-border/30 p-6">
             <h2 id="modal-title" className="font-display text-xl font-bold text-nyaay-navy">
               {title}
             </h2>
             {showCloseButton && (
               <button
+                type="button"
                 onClick={onClose}
                 aria-label="Close"
-                className="p-2 rounded-lg hover:bg-gray-100 transition text-nyaay-muted hover:text-nyaay-navy focus:outline-2 focus:outline-offset-2 focus:outline-nyaay-saffron"
+                className="rounded-lg p-2 text-nyaay-muted transition hover:bg-gray-100 hover:text-nyaay-navy focus:outline-2 focus:outline-offset-2 focus:outline-nyaay-saffron"
               >
-                <X className="h-5 w-5" />
+                <X className="h-5 w-5" aria-hidden="true" />
               </button>
             )}
           </div>
 
-          {/* Content */}
-          <div className="p-6 overflow-y-auto max-h-[calc(100vh-200px)]">{children}</div>
+          <div className="max-h-[calc(100vh-200px)] overflow-y-auto p-6">{children}</div>
         </div>
       </div>
     </>
