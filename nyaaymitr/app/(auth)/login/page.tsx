@@ -1,12 +1,24 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
-import { Scale, Globe, ChevronDown, ShieldCheck, Wallet, Lock, AlertTriangle } from 'lucide-react';
+import {
+  AlertTriangle,
+  BriefcaseBusiness,
+  ChevronDown,
+  Globe,
+  Lock,
+  Scale,
+  ShieldCheck,
+  UserRound,
+  Wallet,
+} from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 
 const LANGUAGES = ['English', 'हिन्दी', 'తెలుగు', 'தமிழ்', 'ಕನ್ನಡ', 'മലയാളം'];
 
 type AuthMode = 'phone' | 'otp' | 'email';
+type LoginRole = 'client' | 'advocate';
 
 export default function LoginPage() {
   const [langOpen, setLangOpen] = useState(false);
@@ -16,8 +28,11 @@ export default function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [authMode, setAuthMode] = useState<AuthMode>('phone');
+  const [role, setRole] = useState<LoginRole>('client');
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
+
+  const redirectPath = role === 'advocate' ? '/advocate/dashboard' : '/dashboard';
 
   function normalizeIndianPhone(value: string) {
     const digits = value.replace(/\D/g, '');
@@ -65,7 +80,7 @@ export default function LoginPage() {
         type: 'sms',
       });
       if (error) throw error;
-      window.location.href = '/dashboard';
+      window.location.href = redirectPath;
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not verify OTP.');
     } finally {
@@ -87,7 +102,7 @@ export default function LoginPage() {
         password,
       });
       if (error) throw error;
-      window.location.href = '/dashboard';
+      window.location.href = redirectPath;
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not sign in.');
     } finally {
@@ -102,7 +117,7 @@ export default function LoginPage() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`,
         },
       });
       if (error) throw error;
@@ -119,7 +134,10 @@ export default function LoginPage() {
         <div className="absolute bottom-1/4 -right-32 h-[500px] w-[500px] rounded-full opacity-15" style={{ background: '#0f1e3c', filter: 'blur(150px)' }} />
       </div>
 
-      <div className="relative z-20 flex justify-end p-4 md:px-16">
+      <div className="relative z-20 flex justify-between p-4 md:px-16">
+        <Link href="/" className="rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-widest transition-all hover:bg-white/10" style={{ borderColor: 'rgba(255,255,255,0.15)', color: '#f8f9fa' }}>
+          Home
+        </Link>
         <div className="relative">
           <button
             type="button"
@@ -150,7 +168,7 @@ export default function LoginPage() {
       </div>
 
       <main className="relative z-10 flex flex-grow flex-col items-center px-5 pb-8 pt-4">
-        <div className="mb-10 flex animate-[fadeSlideUp_0.8s_ease_both] flex-col items-center">
+        <div className="mb-8 flex animate-[fadeSlideUp_0.8s_ease_both] flex-col items-center">
           <div className="mb-5 flex h-24 w-24 items-center justify-center rounded-3xl shadow-2xl" style={{ backgroundColor: 'rgba(212,168,67,0.12)', border: '2px solid rgba(212,168,67,0.3)' }}>
             <Scale className="h-12 w-12" style={{ color: '#D4A843' }} strokeWidth={1.5} />
           </div>
@@ -164,6 +182,38 @@ export default function LoginPage() {
           className="w-full max-w-md animate-[fadeSlideUp_0.8s_0.2s_ease_both_backwards] rounded-2xl p-6 shadow-2xl"
           style={{ backgroundColor: 'rgba(255,255,255,0.04)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.10)' }}
         >
+          <div className="mb-5 grid grid-cols-2 gap-2 rounded-2xl p-1" style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.08)' }}>
+            <button
+              type="button"
+              onClick={() => setRole('client')}
+              className="flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-bold uppercase tracking-widest transition-all"
+              style={{ backgroundColor: role === 'client' ? '#fe6a2a' : 'transparent', color: role === 'client' ? '#fff' : '#b8c6ed' }}
+            >
+              <UserRound className="h-4 w-4" />
+              Citizen
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('advocate')}
+              className="flex items-center justify-center gap-2 rounded-xl px-3 py-3 text-xs font-bold uppercase tracking-widest transition-all"
+              style={{ backgroundColor: role === 'advocate' ? '#fe6a2a' : 'transparent', color: role === 'advocate' ? '#fff' : '#b8c6ed' }}
+            >
+              <BriefcaseBusiness className="h-4 w-4" />
+              Advocate
+            </button>
+          </div>
+
+          <div className="mb-5 rounded-2xl p-4" style={{ backgroundColor: 'rgba(212,168,67,0.08)', border: '1px solid rgba(212,168,67,0.16)' }}>
+            <p className="text-sm font-bold" style={{ color: '#f8f9fa' }}>
+              {role === 'advocate' ? 'Advocate login' : 'Citizen login'}
+            </p>
+            <p className="mt-1 text-xs leading-5" style={{ color: '#b8c6ed' }}>
+              {role === 'advocate'
+                ? 'Access consultation requests, appointment schedules, payment updates, and verification status.'
+                : 'Book consultations, upload documents, and track your legal support requests securely.'}
+            </p>
+          </div>
+
           {authMode !== 'email' ? (
             <div className="space-y-3">
               <label className="block text-xs font-bold uppercase tracking-widest" style={{ color: '#b8c6ed' }}>
@@ -200,7 +250,7 @@ export default function LoginPage() {
                 className="h-14 w-full rounded-xl text-sm font-bold uppercase tracking-widest shadow-lg transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
                 style={{ backgroundColor: '#fe6a2a', color: '#fff' }}
               >
-                {loading ? 'Please wait...' : authMode === 'phone' ? 'Get OTP' : 'Verify OTP'}
+                {loading ? 'Please wait...' : authMode === 'phone' ? 'Get OTP' : `Verify OTP as ${role === 'advocate' ? 'Advocate' : 'Citizen'}`}
               </button>
               {authMode === 'otp' ? (
                 <button type="button" onClick={() => setAuthMode('phone')} className="w-full text-xs font-bold" style={{ color: '#b8c6ed' }}>
@@ -213,7 +263,7 @@ export default function LoginPage() {
               <label className="block text-xs font-bold uppercase tracking-widest" style={{ color: '#b8c6ed' }}>Email</label>
               <input
                 type="email"
-                placeholder="Enter email"
+                placeholder={role === 'advocate' ? 'Advocate email' : 'Enter email'}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="h-[52px] w-full rounded-xl px-4 text-sm outline-none transition-all"
@@ -229,7 +279,7 @@ export default function LoginPage() {
                 style={{ backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.15)', color: '#f8f9fa' }}
               />
               <button type="button" onClick={handleEmailLogin} disabled={loading} className="h-14 w-full rounded-xl text-sm font-bold uppercase tracking-widest shadow-lg transition-all hover:brightness-110 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60" style={{ backgroundColor: '#fe6a2a', color: '#fff' }}>
-                {loading ? 'Signing in...' : 'Login'}
+                {loading ? 'Signing in...' : role === 'advocate' ? 'Login as Advocate' : 'Login as Citizen'}
               </button>
             </div>
           )}
@@ -244,13 +294,24 @@ export default function LoginPage() {
 
           <button type="button" onClick={handleGoogleLogin} disabled={loading} className="mb-4 flex h-12 w-full items-center justify-center gap-3 rounded-xl text-sm font-bold transition-all hover:brightness-95 active:scale-95 disabled:cursor-not-allowed disabled:opacity-60" style={{ backgroundColor: '#fff', color: '#000518' }}>
             <svg className="h-5 w-5" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
-            Continue with Google
+            {role === 'advocate' ? 'Continue as Advocate with Google' : 'Continue with Google'}
           </button>
 
-          <div className="text-center">
+          <div className="space-y-3 text-center">
             <button type="button" onClick={() => setAuthMode(authMode === 'email' ? 'phone' : 'email')} className="border-b pb-0.5 text-sm font-bold transition-colors hover:text-white" style={{ color: '#b8c6ed', borderColor: 'rgba(184,198,237,0.3)' }}>
               {authMode === 'email' ? 'Login via Phone OTP' : 'Login via Email & Password'}
             </button>
+            <p className="text-sm" style={{ color: '#b8c6ed' }}>
+              {role === 'advocate' ? 'Not onboarded yet?' : 'New to NyaayMitr?'}{' '}
+              <Link href={`/register?role=${role}`} className="font-bold underline decoration-white/30 underline-offset-4" style={{ color: '#D4A843' }}>
+                {role === 'advocate' ? 'Start advocate registration' : 'Create account'}
+              </Link>
+            </p>
+            {role === 'advocate' ? (
+              <p className="text-xs leading-5" style={{ color: '#75777e' }}>
+                Advocate access is for listed legal professionals. Profiles remain verification-based and are presented as an unbiased directory, not solicitation.
+              </p>
+            ) : null}
           </div>
         </div>
 
@@ -278,9 +339,9 @@ export default function LoginPage() {
           <AlertTriangle className="h-4 w-4 animate-pulse" style={{ color: '#000518' }} />
           <span className="text-xs font-bold uppercase tracking-widest" style={{ color: '#000518' }}>24/7 Emergency Legal Aid Available</span>
         </div>
-        <button type="button" className="rounded-full px-6 py-1.5 text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110 active:scale-95" style={{ backgroundColor: '#000518', color: '#fff' }}>
+        <Link href="/legal-aid" className="rounded-full px-6 py-1.5 text-xs font-bold uppercase tracking-wider transition-all hover:brightness-110 active:scale-95" style={{ backgroundColor: '#000518', color: '#fff' }}>
           Connect Now
-        </button>
+        </Link>
       </div>
 
       <style>{`
