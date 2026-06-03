@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, CalendarDays, FileText, Video } from 'lucide-react';
+import { CalendarDays, FileText, Video } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 import { useBooking } from '@/hooks/useBooking';
@@ -123,12 +123,24 @@ export function BookingWizard({ lawyerId }: { lawyerId: string }) {
             <p className="text-sm font-semibold uppercase tracking-wide text-nyaay-saffron">Step 1</p>
             <h2 className="mt-2 font-display text-2xl font-bold text-nyaay-navy">Choose consultation type</h2>
             <div className="mt-5 grid gap-4 md:grid-cols-2" role="radiogroup" aria-label="Consultation type">
-              <button type="button" role="radio" aria-checked={consultationType === 'online'} onClick={() => setConsultationType('online')} className={consultationType === 'online' ? 'rounded-3xl[...]
+              <button 
+                type="button" 
+                role="radio" 
+                aria-checked={consultationType === 'online'} 
+                onClick={() => setConsultationType('online')} 
+                className={consultationType === 'online' ? 'rounded-3xl border-2 border-nyaay-saffron bg-orange-50 p-4 text-left transition' : 'rounded-3xl border-2 border-nyaay-border bg-white p-4 text-left transition hover:border-nyaay-saffron/50'}
+              >
                 <Video className="h-6 w-6 text-nyaay-saffron" aria-hidden="true" />
                 <p className="mt-3 font-bold text-nyaay-navy">Online video consultation</p>
                 <p className="mt-1 text-sm text-nyaay-muted">Secure remote consultation with Meet link after confirmation.</p>
               </button>
-              <button type="button" role="radio" aria-checked={consultationType === 'inperson'} onClick={() => setConsultationType('inperson')} className={consultationType === 'inperson' ? 'round[...]
+              <button 
+                type="button" 
+                role="radio" 
+                aria-checked={consultationType === 'inperson'} 
+                onClick={() => setConsultationType('inperson')} 
+                className={consultationType === 'inperson' ? 'rounded-3xl border-2 border-nyaay-saffron bg-orange-50 p-4 text-left transition' : 'rounded-3xl border-2 border-nyaay-border bg-white p-4 text-left transition hover:border-nyaay-saffron/50'}
+              >
                 <CalendarDays className="h-6 w-6 text-nyaay-navy" aria-hidden="true" />
                 <p className="mt-3 font-bold text-nyaay-navy">In-person chamber visit</p>
                 <p className="mt-1 text-sm text-nyaay-muted">Visit advocate office at confirmed time and location.</p>
@@ -142,35 +154,76 @@ export function BookingWizard({ lawyerId }: { lawyerId: string }) {
             <div className="mt-5 grid gap-4 md:grid-cols-2">
               <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
                 Appointment date
-                <input value={appointmentDate} min={today} onChange={(event) => setAppointmentDate(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline[...]
+                <input 
+                  type="date"
+                  value={appointmentDate} 
+                  min={today} 
+                  onChange={(event) => setAppointmentDate(event.target.value)} 
+                  className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron focus:ring-1 focus:ring-nyaay-saffron/30" 
+                />
               </label>
               <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
                 Appointment time
-                <input value={appointmentTime} onChange={(event) => setAppointmentTime(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:[...]
+                <input 
+                  type="time"
+                  value={appointmentTime} 
+                  onChange={(event) => setAppointmentTime(event.target.value)} 
+                  className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron focus:ring-1 focus:ring-nyaay-saffron/30" 
+                />
               </label>
               <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
                 Preferred language
-                <select value={language} onChange={(event) => setLanguage(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-[...]
-                  <option>English</option><option>Hindi</option><option>Telugu</option><option>Tamil</option><option>Kannada</option>
+                <select 
+                  value={language} 
+                  onChange={(event) => setLanguage(event.target.value)} 
+                  className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron focus:ring-1 focus:ring-nyaay-saffron/30"
+                >
+                  <option>English</option>
+                  <option>Hindi</option>
+                  <option>Telugu</option>
+                  <option>Tamil</option>
+                  <option>Kannada</option>
                 </select>
               </label>
               <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
                 Issue category
-                <select value={issueCategory} onChange={(event) => setIssueCategory(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:bor[...]
-                  <option>Family Law</option><option>Property Law</option><option>Consumer Law</option><option>Employment Law</option>
+                <select 
+                  value={issueCategory} 
+                  onChange={(event) => setIssueCategory(event.target.value)} 
+                  className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron focus:ring-1 focus:ring-nyaay-saffron/30"
+                >
+                  <option>Family Law</option>
+                  <option>Property Law</option>
+                  <option>Consumer Law</option>
+                  <option>Employment Law</option>
                 </select>
               </label>
             </div>
             <label className="mt-4 grid gap-2 text-sm font-semibold text-nyaay-navy">
               Brief legal issue description
-              <textarea value={issueDescription} onChange={(event) => setIssueDescription(event.target.value)} className="min-h-32 w-full rounded-2xl border border-nyaay-border p-4 text-sm outlin[...]
+              <textarea 
+                value={issueDescription} 
+                onChange={(event) => setIssueDescription(event.target.value)} 
+                className="min-h-32 w-full rounded-2xl border border-nyaay-border p-4 text-sm outline-none focus:border-nyaay-saffron focus:ring-1 focus:ring-nyaay-saffron/30 resize-none" 
+                placeholder="Describe your legal issue in detail..."
+              />
             </label>
-            <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-4 text-sm text-nyaay-muted focus-within:outline f[...]
+            <label className="mt-4 flex cursor-pointer items-center gap-3 rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-4 text-sm text-nyaay-muted transition hover:border-nyaay-saffron focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-nyaay-saffron">
               <FileText className="h-5 w-5" aria-hidden="true" />
               {documentFile ? documentFile.name : 'Optional document upload (PDF, PNG, JPG up to 10 MB)'}
-              <input type="file" className="sr-only" accept="application/pdf,image/png,image/jpeg" onChange={(event) => setDocumentFile(event.target.files?.[0] ?? null)} />
+              <input 
+                type="file" 
+                className="sr-only" 
+                accept="application/pdf,image/png,image/jpeg" 
+                onChange={(event) => setDocumentFile(event.target.files?.[0] ?? null)} 
+              />
             </label>
-            <button type="button" disabled={creating || !lawyerId} onClick={handleCreateAppointment} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-navy font-bold text-white disabled:cursor-not[...]
+            <button 
+              type="button" 
+              disabled={creating || !lawyerId} 
+              onClick={handleCreateAppointment} 
+              className="mt-5 h-12 w-full rounded-2xl bg-nyaay-navy font-bold text-white disabled:cursor-not-allowed disabled:opacity-50 transition hover:bg-nyaay-navy/90"
+            >
               {creating ? 'Creating request...' : 'Create appointment request'}
             </button>
             {status ? <p className="mt-3 text-sm text-nyaay-muted" role="status" aria-live="polite">{status}</p> : null}
