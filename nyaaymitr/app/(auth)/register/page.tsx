@@ -1,10 +1,145 @@
-import { Logo } from '@/components/shared/Logo';
+'use client';
+
+import { useState } from 'react';
+import { Scale } from 'lucide-react';
+import { supabase } from '@/lib/supabase/client';
+
+type RegisterRole = 'client' | 'advocate';
 
 export default function RegisterPage() {
+  const [role, setRole] = useState<RegisterRole>('client');
+  const [fullName, setFullName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [preferredLanguage, setPreferredLanguage] = useState('English');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
+  const [barCouncilId, setBarCouncilId] = useState('');
+  const [barCouncilState, setBarCouncilState] = useState('');
+  const [enrollmentYear, setEnrollmentYear] = useState('');
+  const [specialisations, setSpecialisations] = useState('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [status, setStatus] = useState<string | null>(null);
+
+  function validateForm() {
+    if (fullName.trim().length < 2) return 'Please enter your full name.';
+    if (!email.trim()) return 'Please enter your email address.';
+    if (password.length < 8) return 'Password must be at least 8 characters.';
+    if (!phone.trim()) return 'Please enter your phone number.';
+    if (!city.trim() || !state.trim()) return 'Please enter your city and state.';
+    if (!acceptedTerms) return 'Please accept the terms and privacy policy.';
+    if (role === 'advocate') {
+      if (!barCouncilId.trim()) return 'Please enter your Bar Council ID.';
+      if (!barCouncilState.trim()) return 'Please enter your Bar Council state.';
+      if (!enrollmentYear.trim()) return 'Please enter your enrollment year.';
+      if (!specialisations.trim()) return 'Please enter at least one specialisation.';
+    }
+    return null;
+  }
+
+  function normalizeIndianPhone(value: string) {
+    const digits = value.replace(/\D/g, '');
+    if (digits.startsWith('91') && digits.length === 12) return '+' + digits;
+    if (digits.length === 10) return '+91' + digits;
+    return value.trim();
+  }
+
+  async function handleRegister() {
+    const validationError = validateForm();
+    if (validationError) {
+      setStatus(validationError);
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setStatus(null);
+
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({
+        email: email.trim(),
+        password,
+        phone: normalizeIndianPhone(phone),
+        options: {
+          data: {
+            full_name: fullName.trim(),
+            role,
+          },
+        },
+      });
+
+      if (signUpError) throw signUpError;
+      const userId = authData.user?.id;
+      if (!userId) {
+        setStatus('Registration started. Please verify your email or phone, then sign in.');
+        return;
+      }
+
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id: userId,
+        full_name: fullName.trim(),
+        phone: normalizeIndianPhone(phone),
+        email: email.trim(),
+        preferred_language: preferredLanguage,
+        role: role === 'advocate' ? 'lawyer' : 'client',
+        city: city.trim(),
+        state: state.trim(),
+      });
+
+      if (profileError) throw profileError;
+
+      if (role === 'advocate') {
+        const { data: lawyer, error: lawyerError } = await supabase
+          .from('lawyers')
+          .insert({
+            profile_id: userId,
+            bar_council_id: barCouncilId.trim(),
+            bar_council_state: barCouncilState.trim(),
+            enrollment_year: Number(enrollmentYear),
+            specialisations: specialisations.split(',').map((item) => item.trim()).filter(Boolean),
+            languages: [preferredLanguage],
+            city: city.trim(),
+            state: state.trim(),
+            is_verified: false,
+          })
+          .select('id')
+          .single();
+
+        if (lawyerError) throw lawyerError;
+
+        if (lawyer?.id) {
+          await supabase.from('verification_requests').insert({
+            lawyer_id: lawyer.id,
+            status: 'submitted',
+            submitted_at: new Date().toISOString(),
+          });
+        }
+      }
+
+      setStatus(role === 'advocate'
+        ? 'Account created. Your advocate profile has been submitted for verification.'
+        : 'Account created. Please check your email or phone if verification is required.');
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Could not create account.');
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <main className="min-h-screen bg-nyaay-surface px-5 py-8 text-nyaay-navy md:px-10">
-      <section className="mx-auto max-w-4xl rounded-3xl bg-white p-6 shadow-card">
-        <Logo />
+    <main className="min-h-screen bg-nyaay-deep px-5 py-8 text-white md:px-10">
+      <section className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-6 shadow-soft backdrop-blur">
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-nyaay-gold/15 text-nyaay-gold">
+            <Scale className="h-7 w-7" />
+          </div>
+          <div>
+            <p className="font-display text-2xl font-bold text-nyaay-gold">NyaayMitr</p>
+            <p className="text-xs text-nyaay-muted">Legal help, made accessible</p>
+          </div>
+        </div>
+
         <div className="mt-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-nyaay-saffron">Create account</p>
           <h1 className="mt-2 font-display text-4xl font-bold">Join NyaayMitr</h1>
@@ -12,35 +147,45 @@ export default function RegisterPage() {
         </div>
 
         <div className="mt-8 grid gap-3 md:grid-cols-2">
-          <button className="rounded-2xl border border-nyaay-saffron bg-orange-50 p-4 text-left font-bold">Client</button>
-          <button className="rounded-2xl border border-nyaay-border bg-white p-4 text-left font-bold">Advocate</button>
+          <button type="button" onClick={() => setRole('client')} className={role === 'client' ? 'rounded-2xl border border-nyaay-saffron bg-nyaay-saffron p-4 text-left font-bold text-white' : 'rounded-2xl border border-white/10 bg-white/5 p-4 text-left font-bold'}>Client</button>
+          <button type="button" onClick={() => setRole('advocate')} className={role === 'advocate' ? 'rounded-2xl border border-nyaay-saffron bg-nyaay-saffron p-4 text-left font-bold text-white' : 'rounded-2xl border border-white/10 bg-white/5 p-4 text-left font-bold'}>Advocate</button>
         </div>
 
         <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Full name" />
-          <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Phone number" />
-          <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Email address" />
-          <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Preferred language" />
-          <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="City" />
-          <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="State" />
+          <input value={fullName} onChange={(event) => setFullName(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Full name" />
+          <input value={phone} onChange={(event) => setPhone(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Phone number" />
+          <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Email address" />
+          <input type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Password" />
+          <select value={preferredLanguage} onChange={(event) => setPreferredLanguage(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron">
+            <option>English</option><option>Hindi</option><option>Telugu</option><option>Tamil</option><option>Kannada</option><option>Malayalam</option>
+          </select>
+          <input value={city} onChange={(event) => setCity(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="City" />
+          <input value={state} onChange={(event) => setState(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="State" />
         </div>
 
-        <div className="mt-8 rounded-3xl bg-nyaay-surface p-5">
-          <h2 className="font-display text-2xl font-bold">Advocate verification details</h2>
-          <p className="mt-1 text-sm text-nyaay-muted">Fill this section only when registering as an advocate.</p>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Bar Council ID" />
-            <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Bar Council State" />
-            <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Enrollment year" />
-            <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm" placeholder="Specialisations" />
+        {role === 'advocate' ? (
+          <div className="mt-8 rounded-3xl border border-white/10 bg-white/5 p-5">
+            <h2 className="font-display text-2xl font-bold">Advocate verification details</h2>
+            <p className="mt-1 text-sm text-nyaay-muted">These details are used for verification before listing visibility.</p>
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <input value={barCouncilId} onChange={(event) => setBarCouncilId(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Bar Council ID" />
+              <input value={barCouncilState} onChange={(event) => setBarCouncilState(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Bar Council State" />
+              <input value={enrollmentYear} onChange={(event) => setEnrollmentYear(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Enrollment year" />
+              <input value={specialisations} onChange={(event) => setSpecialisations(event.target.value)} className="h-12 rounded-2xl border border-white/10 bg-white/5 px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Specialisations, comma separated" />
+            </div>
           </div>
-        </div>
+        ) : null}
 
         <label className="mt-5 flex gap-3 text-sm text-nyaay-muted">
-          <input type="checkbox" className="mt-1" />
+          <input checked={acceptedTerms} onChange={(event) => setAcceptedTerms(event.target.checked)} type="checkbox" className="mt-1" />
           I agree to the Terms, Privacy Policy, and secure processing of my information.
         </label>
-        <button className="mt-6 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card">Create account</button>
+
+        {status ? <p className="mt-4 rounded-2xl bg-white/5 p-4 text-sm text-nyaay-muted">{status}</p> : null}
+
+        <button type="button" disabled={loading} onClick={handleRegister} className="mt-6 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card disabled:cursor-not-allowed disabled:opacity-60">
+          {loading ? 'Creating account...' : 'Create account'}
+        </button>
       </section>
     </main>
   );
