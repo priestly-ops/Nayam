@@ -14,7 +14,7 @@ export type LawyerCardProps = {
   verified?: boolean;
 };
 
-export function LawyerCard({ name, city, state, specialisations, languages, onlineFee, inPersonFee, rating = 0, reviews = 0, verified = false }: LawyerCardProps) {
+export function LawyerCard({ id, name, city, state, specialisations, languages, onlineFee, inPersonFee, rating = 0, reviews = 0, verified = false }: LawyerCardProps) {
   return (
     <article className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
       <div className="flex items-start justify-between gap-4">
@@ -39,7 +39,7 @@ export function LawyerCard({ name, city, state, specialisations, languages, onli
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="text-xs text-nyaay-muted">In-person fee: ₹{inPersonFee}</p>
-        <a href="#" className="rounded-2xl bg-nyaay-navy px-4 py-2 text-sm font-bold text-white">View Profile</a>
+        <a href={`/appointments/new?lawyerId=${id}`} className="rounded-2xl bg-nyaay-navy px-4 py-2 text-sm font-bold text-white">Book</a>
       </div>
     </article>
   );
