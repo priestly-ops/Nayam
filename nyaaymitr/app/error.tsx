@@ -14,8 +14,8 @@ export default function AppError({
   }, [error]);
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-nyaay-surface px-4 text-nyaay-navy">
-      <section className="w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-card">
+    <main className="flex min-h-screen items-center justify-center bg-nyaay-surface px-4 text-nyaay-cream">
+      <section className="w-full max-w-md rounded-3xl bg-white p-6 text-center text-nyaay-navy shadow-card">
         <div className="mb-4 text-4xl" aria-hidden="true">⚠️</div>
         <h1 className="font-display text-2xl font-bold text-nyaay-navy">Something went wrong</h1>
         <p className="mt-3 text-sm leading-6 text-nyaay-muted">
