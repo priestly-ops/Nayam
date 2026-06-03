@@ -9,6 +9,7 @@ export type NotificationItem = {
   body: string;
   is_read: boolean;
   created_at: string;
+  user_id?: string;
 };
 
 export function useNotifications() {
@@ -25,21 +26,31 @@ export function useNotifications() {
         return;
       }
 
+      const userId = userData.user.id;
       const { data } = await supabase
         .from('notifications')
-        .select('id, title, body, is_read, created_at')
-        .eq('user_id', userData.user.id)
+        .select('id, title, body, is_read, created_at, user_id')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
 
       setNotifications((data ?? []) as NotificationItem[]);
       setLoading(false);
 
       channel = supabase
-        .channel('user-notifications')
-        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
-          const item = payload.new as NotificationItem;
-          if (item.id) setNotifications((current) => [item, ...current]);
-        })
+        .channel('user-notifications-' + userId)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'notifications',
+            filter: 'user_id=eq.' + userId,
+          },
+          (payload) => {
+            const item = payload.new as NotificationItem;
+            if (item.id) setNotifications((current) => [item, ...current]);
+          },
+        )
         .subscribe();
     }
 
