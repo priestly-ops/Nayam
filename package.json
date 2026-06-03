@@ -1,0 +1,1 @@
+{"name":"nayam-root","private":true,"scripts":{"build":"cd nyaaymitr && npm install && npm run build","dev":"cd nyaaymitr && npm run dev","start":"cd nyaaymitr && npm run start"},"engines":{"node":"20.x"}}
