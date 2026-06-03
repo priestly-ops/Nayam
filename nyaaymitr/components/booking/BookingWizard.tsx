@@ -1,17 +1,11 @@
 'use client';
 
 import { CalendarDays, FileText, Video } from 'lucide-react';
-import { useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useState } from 'react';
 import { useBooking } from '@/hooks/useBooking';
 import { PaymentProofUploader } from './PaymentProofUploader';
 
-export function BookingWizard({ lawyerId: providedLawyerId }: { lawyerId?: string }) {
-  const searchParams = useSearchParams();
-  const lawyerId = useMemo(
-    () => providedLawyerId ?? searchParams.get('lawyerId') ?? '',
-    [providedLawyerId, searchParams],
-  );
+export function BookingWizard({ lawyerId }: { lawyerId: string }) {
   const { createAppointment } = useBooking();
   const [consultationType, setConsultationType] = useState<'online' | 'inperson'>('online');
   const [appointmentDate, setAppointmentDate] = useState('');
