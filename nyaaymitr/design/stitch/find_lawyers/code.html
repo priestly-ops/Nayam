@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Find Lawyers | NyaayMitr</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&amp;family=Playfair+Display:ital,wght@0,400..900;1,400..900&amp;family=Noto+Sans+Devanagari:wght@100..900&amp;family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@100..900&amp;family=Playfair+Display:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#edeeef",
+                      "on-primary-fixed": "#0b1b38",
+                      "surface-variant": "#e1e3e4",
+                      "primary-fixed-dim": "#b8c6ed",
+                      "tertiary-container": "#2a1d00",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-secondary": "#ffffff",
+                      "on-primary-fixed-variant": "#394666",
+                      "secondary-fixed-dim": "#ffb59a",
+                      "on-secondary-fixed-variant": "#802a00",
+                      "outline-variant": "#c5c6ce",
+                      "inverse-surface": "#2e3132",
+                      "primary": "#000518",
+                      "inverse-primary": "#b8c6ed",
+                      "on-primary": "#ffffff",
+                      "on-surface-variant": "#45464e",
+                      "secondary-fixed": "#ffdbce",
+                      "on-error-container": "#93000a",
+                      "surface": "#f8f9fa",
+                      "on-tertiary-fixed": "#261a00",
+                      "error": "#ba1a1a",
+                      "on-background": "#191c1d",
+                      "surface-bright": "#f8f9fa",
+                      "on-tertiary-container": "#a8811d",
+                      "on-error": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "error-container": "#ffdad6",
+                      "on-tertiary-fixed-variant": "#5b4300",
+                      "surface-container-high": "#e7e8e9",
+                      "primary-container": "#0f1e3c",
+                      "primary-fixed": "#d9e2ff",
+                      "on-secondary-container": "#5b1b00",
+                      "secondary": "#a83900",
+                      "surface-dim": "#d9dadb",
+                      "inverse-on-surface": "#f0f1f2",
+                      "background": "#f8f9fa",
+                      "surface-container-low": "#f3f4f5",
+                      "tertiary": "#0b0600",
+                      "on-surface": "#191c1d",
+                      "on-secondary-fixed": "#380d00",
+                      "outline": "#75777e",
+                      "tertiary-fixed": "#ffdf9f",
+                      "on-primary-container": "#7886aa",
+                      "surface-tint": "#505e7f",
+                      "surface-container-lowest": "#ffffff",
+                      "tertiary-fixed-dim": "#eec058"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "margin-desktop": "64px",
+                      "xs": "4px",
+                      "unit": "4px",
+                      "margin-mobile": "16px",
+                      "md": "16px",
+                      "gutter": "24px",
+                      "lg": "24px",
+                      "sm": "8px",
+                      "xl": "40px"
+              },
+              "fontFamily": {
+                      "headline-lg": ["Playfair Display"],
+                      "body-sm": ["DM Sans"],
+                      "headline-sm": ["Playfair Display"],
+                      "label-bold": ["DM Sans"],
+                      "body-lg": ["DM Sans"],
+                      "hindi-body": ["Noto Sans Devanagari"],
+                      "body-md": ["DM Sans"],
+                      "headline-md": ["Playfair Display"],
+                      "headline-lg-mobile": ["Playfair Display"]
+              },
+              "fontSize": {
+                      "headline-lg": ["40px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                      "body-sm": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                      "headline-sm": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                      "label-bold": ["14px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "700"}],
+                      "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "hindi-body": ["16px", {"lineHeight": "1.8", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                      "headline-md": ["32px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                      "headline-lg-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .filled-star {
+            font-variation-settings: 'FILL' 1;
+            color: #eec058;
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f0f1f2 25%, #e1e3e4 50%, #f0f1f2 75%);
+            background-size: 200% 100%;
+            animation: skeleton-loading 1.5s infinite;
+        }
+        @keyframes skeleton-loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body-md selection:bg-secondary-fixed selection:text-on-secondary-fixed">
+<!-- TopAppBar -->
+<header class="bg-surface dark:bg-surface-dim shadow-[0px_4px_20px_rgba(15,30,60,0.05)] w-full top-0 sticky z-50">
+<div class="flex justify-between items-center px-margin-mobile md:px-margin-desktop py-4 w-full">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed cursor-pointer">menu</span>
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed tracking-tight">NyaayMitr</span>
+</div>
+<nav class="hidden md:flex gap-lg items-center">
+<a class="text-on-surface-variant dark:text-outline hover:bg-surface-container dark:hover:bg-surface-container-high transition-colors px-2 py-1 rounded" href="#">Dashboard</a>
+<a class="text-secondary dark:text-secondary-fixed font-bold hover:bg-surface-container transition-colors px-2 py-1 rounded" href="#">Lawyers</a>
+<a class="text-on-surface-variant dark:text-outline hover:bg-surface-container transition-colors px-2 py-1 rounded" href="#">Documents</a>
+</nav>
+<div class="flex items-center gap-md">
+<div class="w-10 h-10 rounded-full overflow-hidden border border-outline-variant shadow-sm transition-transform active:scale-90 cursor-pointer">
+<img alt="User profile photo" class="w-full h-full object-cover" data-alt="A professional headshot of a person in high-key studio lighting with a neutral, soft gray background. The subject is wearing business attire, exuding confidence and approachability. The image style is polished and modern, utilizing soft highlights and shallow depth of field to emphasize the person's friendly yet authoritative facial expression, consistent with a premium corporate directory." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBiVXz9_ViaZGmEcaYRRYsznphT--DVv6KFq6uxF8yR3m6KsGMoyinX1ttuAh65zngXoGKm9Vdq__Yg_ZePmOXX90RAtJpIZpYhvjx-MDLyl9GgD_IR8FLQHUkJVcEiFERzXXVjquzUOlghTtUlc8U0yeSYWaEYtXjLDc_BTdgwbn-lbKsYRjzMeLLDItqxNJPKSjnzbfGriY5pl6X2E9ltLs3dbbwqpfYG3jhtzjZFFpSqkgTjRAslYg-PkDig3IWDf4VLHJbaPYM"/>
+</div>
+</div>
+</div>
+</header>
+<main class="flex min-h-screen px-margin-mobile md:px-margin-desktop py-lg gap-gutter">
+<!-- Animated Sidebar Filters -->
+<aside class="hidden lg:flex flex-col w-72 gap-xl shrink-0 sticky top-24 h-fit">
+<section class="flex flex-col gap-md">
+<h3 class="font-headline-sm text-headline-sm text-primary">Filters</h3>
+<div class="flex flex-col gap-sm">
+<p class="font-label-bold text-label-bold text-outline">EXPERIENCE</p>
+<div class="space-y-2">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+<span class="group-hover:text-secondary transition-colors">15+ Years</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+<span class="group-hover:text-secondary transition-colors">10 - 15 Years</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input checked="" class="rounded border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+<span class="group-hover:text-secondary transition-colors">5 - 10 Years</span>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-sm">
+<p class="font-label-bold text-label-bold text-outline">RATING</p>
+<div class="space-y-2">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="text-secondary focus:ring-secondary border-outline-variant transition-all" name="rating" type="radio"/>
+<div class="flex gap-xs">
+<span class="material-symbols-outlined text-[18px] filled-star">star</span>
+<span class="material-symbols-outlined text-[18px] filled-star">star</span>
+<span class="material-symbols-outlined text-[18px] filled-star">star</span>
+<span class="material-symbols-outlined text-[18px] filled-star">star</span>
+<span class="material-symbols-outlined text-[18px] text-outline">star</span>
+<span class="text-body-sm">4+ stars</span>
+</div>
+</label>
+</div>
+</div>
+<div class="flex flex-col gap-sm">
+<p class="font-label-bold text-label-bold text-outline">CONSULTATION FEE</p>
+<div class="space-y-2">
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+<span class="group-hover:text-secondary transition-colors">Under ₹1,000</span>
+</label>
+<label class="flex items-center gap-2 cursor-pointer group">
+<input class="rounded border-outline-variant text-secondary focus:ring-secondary transition-all" type="checkbox"/>
+<span class="group-hover:text-secondary transition-colors">₹1,000 - ₹5,000</span>
+</label>
+</div>
+</div>
+</section>
+<!-- Promotions/Ad Card -->
+<div class="bg-primary-container p-lg rounded-xl flex flex-col gap-sm">
+<span class="material-symbols-outlined text-tertiary-fixed text-[32px]">gavel</span>
+<h4 class="font-headline-sm text-headline-sm text-white">Legal Aid</h4>
+<p class="text-on-primary-container text-body-sm">Access pro-bono services for civil rights and family matters. Apply for eligibility today.</p>
+<button class="bg-secondary-container text-on-secondary-container font-label-bold px-4 py-2 rounded-lg mt-2 hover:opacity-90 transition-opacity">Apply Now</button>
+</div>
+</aside>
+<!-- Main Content Canvas -->
+<div class="flex-1 flex flex-col gap-lg max-w-5xl mx-auto w-full">
+<!-- Sticky Search & Filter Chips -->
+<div class="sticky top-20 z-40 bg-background/80 backdrop-blur-md pb-md">
+<div class="flex flex-col gap-md">
+<!-- Search Bar -->
+<div class="relative flex items-center group">
+<span class="material-symbols-outlined absolute left-4 text-outline group-focus-within:text-secondary transition-colors">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant rounded-full py-4 pl-12 pr-14 font-body-md focus:ring-2 focus:ring-tertiary-fixed-dim focus:border-secondary outline-none transition-all shadow-sm" placeholder="Search by name, expertise, or location..." type="text"/>
+<button class="absolute right-4 p-2 rounded-full hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-secondary">mic</span>
+</button>
+</div>
+<!-- Horizontal Scrolling Chips -->
+<div class="flex items-center gap-sm overflow-x-auto hide-scrollbar -mx-2 px-2 py-1">
+<button class="shrink-0 bg-primary text-white px-md py-2 rounded-full font-label-bold text-label-bold border border-primary transition-all">All Specializations</button>
+<button class="shrink-0 bg-surface-container-lowest text-on-surface-variant hover:border-secondary px-md py-2 rounded-full font-label-bold text-label-bold border border-outline-variant transition-all">Criminal</button>
+<button class="shrink-0 bg-surface-container-lowest text-on-surface-variant hover:border-secondary px-md py-2 rounded-full font-label-bold text-label-bold border border-outline-variant transition-all">Civil</button>
+<button class="shrink-0 bg-surface-container-lowest text-on-surface-variant hover:border-secondary px-md py-2 rounded-full font-label-bold text-label-bold border border-outline-variant transition-all">Family</button>
+<button class="shrink-0 bg-surface-container-lowest text-on-surface-variant hover:border-secondary px-md py-2 rounded-full font-label-bold text-label-bold border border-outline-variant transition-all">Corporate</button>
+<button class="shrink-0 bg-surface-container-lowest text-on-surface-variant hover:border-secondary px-md py-2 rounded-full font-label-bold text-label-bold border border-outline-variant transition-all">Intellectual Property</button>
+<button class="shrink-0 bg-surface-container-lowest text-on-surface-variant hover:border-secondary px-md py-2 rounded-full font-label-bold text-label-bold border border-outline-variant transition-all">Real Estate</button>
+</div>
+</div>
+</div>
+<!-- Header Info -->
+<div class="flex justify-between items-end">
+<div>
+<h2 class="font-headline-md text-headline-md text-primary">Qualified Legal Experts</h2>
+<p class="text-on-surface-variant font-body-md">245 verified lawyers found near your location.</p>
+</div>
+<div class="flex items-center gap-2 text-label-bold font-label-bold text-outline">
+<span>SORT BY:</span>
+<button class="text-secondary flex items-center gap-1">Top Rated <span class="material-symbols-outlined text-[18px]">expand_more</span></button>
+</div>
+</div>
+<!-- Lawyer Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter pb-xl" id="lawyer-grid">
+<!-- Skeleton Loader (Visible initially, hidden via JS) -->
+<div class="skeleton-state space-y-gutter">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
+<!-- Repeated Skeletons -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden p-4 space-y-4">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg skeleton"></div>
+<div class="flex-1 space-y-2 py-2">
+<div class="h-4 w-1/2 skeleton rounded"></div>
+<div class="h-3 w-1/4 skeleton rounded"></div>
+</div>
+</div>
+<div class="h-20 w-full skeleton rounded"></div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden p-4 space-y-4">
+<div class="flex gap-4">
+<div class="w-16 h-16 rounded-lg skeleton"></div>
+<div class="flex-1 space-y-2 py-2">
+<div class="h-4 w-1/2 skeleton rounded"></div>
+<div class="h-3 w-1/4 skeleton rounded"></div>
+</div>
+</div>
+<div class="h-20 w-full skeleton rounded"></div>
+</div>
+</div>
+</div>
+<!-- Actual Content (Initially hidden) -->
+<!-- Lawyer Card 1 -->
+<div class="lawyer-card hidden bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-[0px_4px_20px_rgba(15,30,60,0.05)] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-secondary cursor-pointer group">
+<div class="relative h-24 bg-primary p-4 flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-xl border-2 border-white bg-secondary-container flex items-center justify-center font-headline-sm text-on-secondary-container">
+                                AM
+                            </div>
+<div class="pt-2">
+<h3 class="text-white font-headline-sm text-[18px]">Adv. Anjali Mehta</h3>
+<div class="flex items-center gap-1 text-tertiary-fixed text-[12px] font-label-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Bar Council Verified
+                                </div>
+</div>
+</div>
+<span class="bg-green-500/20 text-green-100 text-[10px] px-2 py-1 rounded-full border border-green-500/30">ONLINE</span>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary filled-star text-[20px]">star</span>
+<span class="font-bold text-primary">4.9</span>
+<span class="text-on-surface-variant text-body-sm">(120+ reviews)</span>
+</div>
+<div class="text-on-surface-variant text-label-bold">12 yrs exp</div>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">Specializing in Family Law and Domestic Dispute Resolution with a focus on empathetic litigation.</p>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">Hindi</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">English</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">Marathi</span>
+</div>
+<div class="pt-2 border-t border-outline-variant flex justify-between items-center">
+<div>
+<span class="text-outline text-body-sm block">Consultation Fee</span>
+<span class="font-headline-sm text-[20px] text-primary">₹1,500</span>
+</div>
+<button class="bg-secondary text-white font-label-bold px-lg py-3 rounded-lg transition-all active:scale-95 group-hover:bg-primary">Book Now</button>
+</div>
+</div>
+</div>
+<!-- Lawyer Card 2 -->
+<div class="lawyer-card hidden bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-[0px_4px_20px_rgba(15,30,60,0.05)] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-secondary cursor-pointer group">
+<div class="relative h-24 bg-primary p-4 flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-xl border-2 border-white bg-primary-fixed flex items-center justify-center font-headline-sm text-on-primary-fixed">
+                                VK
+                            </div>
+<div class="pt-2">
+<h3 class="text-white font-headline-sm text-[18px]">Adv. Vikram Khanna</h3>
+<div class="flex items-center gap-1 text-tertiary-fixed text-[12px] font-label-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Bar Council Verified
+                                </div>
+</div>
+</div>
+<span class="bg-on-surface-variant/20 text-surface-variant text-[10px] px-2 py-1 rounded-full border border-surface-variant/30">OFFLINE</span>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary filled-star text-[20px]">star</span>
+<span class="font-bold text-primary">4.7</span>
+<span class="text-on-surface-variant text-body-sm">(85 reviews)</span>
+</div>
+<div class="text-on-surface-variant text-label-bold">18 yrs exp</div>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">Leading expert in Corporate Compliance, Mergers, and Commercial Arbitration for SMEs.</p>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">English</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">Punjabi</span>
+</div>
+<div class="pt-2 border-t border-outline-variant flex justify-between items-center">
+<div>
+<span class="text-outline text-body-sm block">Consultation Fee</span>
+<span class="font-headline-sm text-[20px] text-primary">₹3,500</span>
+</div>
+<button class="bg-secondary text-white font-label-bold px-lg py-3 rounded-lg transition-all active:scale-95 group-hover:bg-primary">Book Now</button>
+</div>
+</div>
+</div>
+<!-- Lawyer Card 3 -->
+<div class="lawyer-card hidden bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-[0px_4px_20px_rgba(15,30,60,0.05)] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-secondary cursor-pointer group">
+<div class="relative h-24 bg-primary p-4 flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-xl border-2 border-white bg-tertiary-fixed flex items-center justify-center font-headline-sm text-on-tertiary-fixed">
+                                RS
+                            </div>
+<div class="pt-2">
+<h3 class="text-white font-headline-sm text-[18px]">Adv. Rohan Sharma</h3>
+<div class="flex items-center gap-1 text-tertiary-fixed text-[12px] font-label-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Bar Council Verified
+                                </div>
+</div>
+</div>
+<span class="bg-green-500/20 text-green-100 text-[10px] px-2 py-1 rounded-full border border-green-500/30">ONLINE</span>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary filled-star text-[20px]">star</span>
+<span class="font-bold text-primary">4.8</span>
+<span class="text-on-surface-variant text-body-sm">(210 reviews)</span>
+</div>
+<div class="text-on-surface-variant text-label-bold">8 yrs exp</div>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">Experienced Criminal Defense lawyer specializing in bail applications and white-collar crime.</p>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">Hindi</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">English</span>
+</div>
+<div class="pt-2 border-t border-outline-variant flex justify-between items-center">
+<div>
+<span class="text-outline text-body-sm block">Consultation Fee</span>
+<span class="font-headline-sm text-[20px] text-primary">₹2,000</span>
+</div>
+<button class="bg-secondary text-white font-label-bold px-lg py-3 rounded-lg transition-all active:scale-95 group-hover:bg-primary">Book Now</button>
+</div>
+</div>
+</div>
+<!-- Lawyer Card 4 -->
+<div class="lawyer-card hidden bg-surface-container-lowest border border-outline-variant rounded-xl overflow-hidden shadow-[0px_4px_20px_rgba(15,30,60,0.05)] transition-all duration-300 hover:-translate-y-2 hover:shadow-xl hover:border-secondary cursor-pointer group">
+<div class="relative h-24 bg-primary p-4 flex justify-between items-start">
+<div class="flex items-center gap-3">
+<div class="w-16 h-16 rounded-xl border-2 border-white bg-on-secondary-container flex items-center justify-center font-headline-sm text-white">
+                                SM
+                            </div>
+<div class="pt-2">
+<h3 class="text-white font-headline-sm text-[18px]">Adv. Sarah Mani</h3>
+<div class="flex items-center gap-1 text-tertiary-fixed text-[12px] font-label-bold uppercase tracking-wider">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                                    Bar Council Verified
+                                </div>
+</div>
+</div>
+<span class="bg-green-500/20 text-green-100 text-[10px] px-2 py-1 rounded-full border border-green-500/30">ONLINE</span>
+</div>
+<div class="p-lg flex flex-col gap-md">
+<div class="flex justify-between items-center">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary filled-star text-[20px]">star</span>
+<span class="font-bold text-primary">5.0</span>
+<span class="text-on-surface-variant text-body-sm">(45 reviews)</span>
+</div>
+<div class="text-on-surface-variant text-label-bold">15 yrs exp</div>
+</div>
+<p class="text-on-surface-variant text-body-md line-clamp-2">High Court practitioner specializing in Real Estate disputes, property verification, and registration.</p>
+<div class="flex flex-wrap gap-xs">
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">English</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">Tamil</span>
+<span class="bg-secondary-fixed text-on-secondary-fixed text-[12px] px-3 py-1 rounded-full font-label-bold">Kannada</span>
+</div>
+<div class="pt-2 border-t border-outline-variant flex justify-between items-center">
+<div>
+<span class="text-outline text-body-sm block">Consultation Fee</span>
+<span class="font-headline-sm text-[20px] text-primary">₹2,500</span>
+</div>
+<button class="bg-secondary text-white font-label-bold px-lg py-3 rounded-lg transition-all active:scale-95 group-hover:bg-primary">Book Now</button>
+</div>
+</div>
+</div>
+</div>
+<!-- Pagination/Load More -->
+<div class="flex justify-center pb-xl">
+<button class="flex items-center gap-2 border border-secondary text-secondary px-xl py-3 rounded-full font-label-bold hover:bg-secondary-fixed/30 transition-all">
+                    Load More Professionals
+                    <span class="material-symbols-outlined">expand_more</span>
+</button>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 pb-safe bg-surface-container-lowest dark:bg-surface-container-highest shadow-[0px_-4px_16px_rgba(0,0,0,0.08)] lg:hidden rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label-bold text-[11px] mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">folder_shared</span>
+<span class="font-label-bold text-[11px] mt-1">Cases</span>
+</a>
+<a class="flex flex-col items-center justify-center text-secondary dark:text-secondary-fixed-dim bg-secondary-fixed dark:bg-on-secondary-fixed-variant/20 rounded-full px-4 py-1 active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-label-bold text-[11px] mt-1">Lawyers</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant dark:text-outline-variant hover:text-secondary transition-colors" href="#">
+<span class="material-symbols-outlined">notifications</span>
+<span class="font-label-bold text-[11px] mt-1">Alerts</span>
+</a>
+</nav>
+<!-- Script for interaction -->
+<script>
+        // Simulate Loading State
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                const skeletons = document.querySelectorAll('.skeleton-state');
+                const cards = document.querySelectorAll('.lawyer-card');
+                
+                skeletons.forEach(s => s.classList.add('hidden'));
+                cards.forEach(c => {
+                    c.classList.remove('hidden');
+                    c.classList.add('animate-in', 'fade-in', 'duration-500');
+                });
+            }, 1200);
+        });
+
+        // Simple Card Lift micro-interaction
+        document.querySelectorAll('.lawyer-card').forEach(card => {
+            card.addEventListener('mouseenter', () => {
+                // Any specific hover logic if needed via JS
+            });
+        });
+    </script>
+</body></html>
