@@ -32,7 +32,7 @@ export function LawyerCard({ id, name, city, state, specialisations, languages, 
         </div>
       </div>
       <div className="mt-4 flex flex-wrap gap-2">
-        {specialisations.slice(0, 3).map((item) => <span key={item} className="rounded-full bg-nyaay-surface px-3 py-1 text-xs font-semibold text-nyaay-navy">{item}</span>)}
+        {specialisations.slice(0, 3).map((item) => <span key={item} className="rounded-full bg-nyaay-surface px-3 py-1 text-xs font-semibold text-white">{item}</span>)}
       </div>
       <div className="mt-4 flex items-center justify-between border-t border-nyaay-border pt-4 text-sm">
         <p className="flex items-center gap-1 text-nyaay-muted"><Languages className="h-4 w-4" /> {languages.join(', ')}</p>
