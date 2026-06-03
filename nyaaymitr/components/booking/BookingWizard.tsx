@@ -1,11 +1,17 @@
 'use client';
 
 import { CalendarDays, FileText, Video } from 'lucide-react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useBooking } from '@/hooks/useBooking';
 import { PaymentProofUploader } from './PaymentProofUploader';
 
-export function BookingWizard({ lawyerId = '00000000-0000-0000-0000-000000000000' }: { lawyerId?: string }) {
+export function BookingWizard({ lawyerId: providedLawyerId }: { lawyerId?: string }) {
+  const searchParams = useSearchParams();
+  const lawyerId = useMemo(
+    () => providedLawyerId ?? searchParams.get('lawyerId') ?? '',
+    [providedLawyerId, searchParams],
+  );
   const { createAppointment } = useBooking();
   const [consultationType, setConsultationType] = useState<'online' | 'inperson'>('online');
   const [appointmentDate, setAppointmentDate] = useState('');
@@ -15,9 +21,27 @@ export function BookingWizard({ lawyerId = '00000000-0000-0000-0000-000000000000
   const [issueDescription, setIssueDescription] = useState('');
   const [appointmentId, setAppointmentId] = useState<string | undefined>();
   const [status, setStatus] = useState<string | null>(null);
+  const [creating, setCreating] = useState(false);
+
+  function validateBookingForm() {
+    if (!lawyerId) return 'Please select an advocate before creating an appointment.';
+    if (!appointmentDate) return 'Please select an appointment date.';
+    if (!appointmentTime) return 'Please select an appointment time.';
+    if (!issueCategory) return 'Please select an issue category.';
+    if (issueDescription.trim().length < 20) return 'Please describe your legal issue in at least 20 characters.';
+    return null;
+  }
 
   async function handleCreateAppointment() {
+    const validationError = validateBookingForm();
+    if (validationError) {
+      setStatus(validationError);
+      return;
+    }
+
     try {
+      setCreating(true);
+      setStatus(null);
       const id = await createAppointment({
         lawyerId,
         consultationType,
@@ -25,19 +49,27 @@ export function BookingWizard({ lawyerId = '00000000-0000-0000-0000-000000000000
         appointmentTime,
         language,
         issueCategory,
-        issueDescription,
+        issueDescription: issueDescription.trim(),
         feeAmount: 1000,
       });
       setAppointmentId(id);
       setStatus('Appointment created. You can now submit UPI payment proof.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not create appointment');
+    } finally {
+      setCreating(false);
     }
   }
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_420px]">
       <section className="space-y-5">
+        {!lawyerId ? (
+          <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 text-sm font-semibold text-amber-900">
+            Select an advocate from the lawyer directory first. Appointment booking is disabled until a real lawyer is selected.
+          </div>
+        ) : null}
+
         <div className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
           <p className="text-sm font-semibold uppercase tracking-wide text-nyaay-saffron">Step 1</p>
           <h2 className="mt-2 font-display text-2xl font-bold text-nyaay-navy">Choose consultation type</h2>
@@ -73,7 +105,9 @@ export function BookingWizard({ lawyerId = '00000000-0000-0000-0000-000000000000
             <FileText className="h-5 w-5" /> Optional document upload
             <input type="file" className="sr-only" />
           </label>
-          <button type="button" onClick={handleCreateAppointment} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-navy font-bold text-white">Create appointment request</button>
+          <button type="button" disabled={creating || !lawyerId} onClick={handleCreateAppointment} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-navy font-bold text-white disabled:cursor-not-allowed disabled:opacity-50">
+            {creating ? 'Creating request...' : 'Create appointment request'}
+          </button>
           {status ? <p className="mt-3 text-sm text-nyaay-muted">{status}</p> : null}
         </div>
       </section>
