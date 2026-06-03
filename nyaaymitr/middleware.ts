@@ -20,7 +20,7 @@ export async function middleware(request: NextRequest) {
 
   const { data } = await supabase.auth.getUser();
   const pathname = request.nextUrl.pathname;
-  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/lawyers') || pathname.startsWith('/appointments') || pathname.startsWith('/documents') || pathname.startsWith('/admin') || pathname.startsWith('/lawyer-dashboard');
+  const isProtected = pathname.startsWith('/dashboard') || pathname.startsWith('/lawyers') || pathname.startsWith('/appointments') || pathname.startsWith('/documents') || pathname.startsWith('/legal-aid') || pathname.startsWith('/admin') || pathname.startsWith('/advocate') || pathname.startsWith('/lawyer-dashboard');
 
   if (isProtected && !data.user) {
     const redirectUrl = request.nextUrl.clone();
@@ -32,5 +32,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|login|register).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|login|register|auth/callback).*)'],
 };
