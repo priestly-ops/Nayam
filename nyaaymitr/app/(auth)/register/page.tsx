@@ -1,11 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowLeft, Scale } from 'lucide-react';
+import { Scale } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
 import { BackButton } from '@/components/common/BackButton';
-<BackButton fallbackHref="/login" label="Back to login" />
+
 type RegisterRole = 'client' | 'advocate';
 
 const inputClass =
@@ -226,41 +225,37 @@ export default function RegisterPage() {
         aria-labelledby="register-heading"
         className="mx-auto max-w-4xl rounded-3xl border border-white/10 bg-white/5 p-6 shadow-soft backdrop-blur"
       >
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-nyaay-gold/15 text-nyaay-gold">
-              <Scale className="h-7 w-7" aria-hidden="true" />
-            </div>
+        <div className="mb-6">
+          <BackButton fallbackHref="/login" label="Back to login" />
+        </div>
 
-            <div>
-              <p className="font-display text-2xl font-bold text-nyaay-gold">
-                NyaayMitr
-              </p>
-              <p className="text-xs text-nyaay-muted">
-                Legal help, made accessible
-              </p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-nyaay-gold/15 text-nyaay-gold">
+            <Scale className="h-7 w-7" aria-hidden="true" />
           </div>
 
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-bold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron"
-          >
-            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            Back to login
-          </Link>
+          <div>
+            <p className="font-display text-2xl font-bold text-nyaay-gold">
+              NyaayMitr
+            </p>
+            <p className="text-xs text-nyaay-muted">
+              Legal help, made accessible
+            </p>
+          </div>
         </div>
 
         <div className="mt-8">
           <p className="text-sm font-semibold uppercase tracking-wide text-nyaay-saffron">
             Create account
           </p>
+
           <h1
             id="register-heading"
             className="mt-2 font-display text-4xl font-bold"
           >
             Join NyaayMitr
           </h1>
+
           <p className="mt-3 text-sm leading-6 text-nyaay-muted">
             Register as a client or advocate. Advocate profiles become searchable
             only after verification.
