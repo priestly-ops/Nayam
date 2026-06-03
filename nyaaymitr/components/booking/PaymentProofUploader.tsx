@@ -1,94 +1,272 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useBooking } from '@/hooks/useBooking';
-import { useDocuments } from '@/hooks/useDocuments';
+import { AlertCircle, CheckCircle, Loader, X } from 'lucide-react';
+import { useCallback, useState } from 'react';
 
-type PaymentProofUploaderProps = {
+interface PaymentProof {
+  file: File;
+  preview: string;
+}
+
+interface PaymentProofUploaderProps {
   appointmentId?: string;
   expectedAmount: number;
-};
+}
 
 export function PaymentProofUploader({ appointmentId, expectedAmount }: PaymentProofUploaderProps) {
-  const { uploadPaymentProof } = useDocuments();
-  const { submitUpiPaymentProof } = useBooking();
-  const [file, setFile] = useState<File | null>(null);
-  const [utr, setUtr] = useState('');
-  const [status, setStatus] = useState<string | null>(null);
+  const [paymentProof, setPaymentProof] = useState<PaymentProof | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [requestInProgress, setRequestInProgress] = useState(false);
+  const [idempotencyKey] = useState(() => `payment_${appointmentId}_${Date.now()}`);
 
-  useEffect(() => {
-    setStatus(null);
-  }, [appointmentId, expectedAmount]);
+  const handleFileSelect = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  function validatePaymentForm() {
-    if (!appointmentId) return 'Create an appointment before submitting payment proof.';
-    if (!utr.trim() || utr.trim().length < 8) return 'Please enter a valid UTR or transaction reference.';
-    if (!file) return 'Please choose a payment screenshot first.';
-    if (file.size > 5 * 1024 * 1024) return 'Payment proof file must be under 5 MB.';
-    const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
-    if (!allowedTypes.includes(file.type)) return 'Upload PNG, JPG, JPEG, or PDF only.';
-    return null;
-  }
-
-  async function handleUpload() {
-    const validationError = validatePaymentForm();
-    if (validationError) {
-      setStatus(validationError);
+    // Validation
+    const validTypes = ['image/png', 'image/jpeg', 'application/pdf'];
+    if (!validTypes.includes(file.type)) {
+      setError('Only PNG, JPG, and PDF files accepted');
       return;
     }
 
-    try {
-      setUploading(true);
-      setStatus(null);
-      const path = await uploadPaymentProof(file!, appointmentId!);
-      await submitUpiPaymentProof({
-        appointmentId: appointmentId!,
-        amount: expectedAmount,
-        upiId: 'nyaaymitr@upi',
-        upiPayeeName: 'NyaayMitr',
-        upiTransactionRef: utr.trim(),
-        paymentScreenshotPath: path,
+    if (file.size > 10 * 1024 * 1024) {
+      setError('File must be under 10 MB');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setPaymentProof({
+        file,
+        preview: event.target?.result as string,
       });
-      setStatus('Payment proof submitted for verification.');
-    } catch (error) {
-      setStatus(error instanceof Error ? error.message : 'Upload failed');
+      setError(null);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
+  const handleUpload = useCallback(async () => {
+    if (!paymentProof || !appointmentId) {
+      setError('Please select a file');
+      return;
+    }
+
+    // Prevent double submission
+    if (requestInProgress || uploading || verifying) {
+      console.warn('Request already in progress');
+      return;
+    }
+
+    setUploading(true);
+    setError(null);
+    setRequestInProgress(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', paymentProof.file);
+      formData.append('appointmentId', appointmentId);
+      formData.append('expectedAmount', expectedAmount.toString());
+
+      // Create abort controller with 30 second timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+      const response = await fetch('/api/appointments/verify-payment', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+        headers: {
+          // Add idempotency key for backend deduplication
+          'X-Idempotency-Key': idempotencyKey,
+        },
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const data = await response.json();
+
+        if (response.status === 408) {
+          throw new Error('Request timed out. Please try again.');
+        }
+
+        if (response.status === 409) {
+          // Payment already verified (idempotency)
+          setVerified(true);
+          setError(null);
+          return;
+        }
+
+        throw new Error(data.message || 'Verification failed');
+      }
+
+      const data = await response.json();
+      setVerified(true);
+      setError(null);
+    } catch (err: any) {
+      if (err.name === 'AbortError') {
+        setError('Request took too long. Please check your connection and try again.');
+      } else {
+        setError(err.message || 'Verification failed. Please try again.');
+      }
     } finally {
       setUploading(false);
+      setVerifying(false);
+      setRequestInProgress(false);
     }
-  }
+  }, [paymentProof, appointmentId, expectedAmount, requestInProgress, uploading, verifying, idempotencyKey]);
+
+  const isSubmitDisabled = !paymentProof || uploading || verifying || verified || requestInProgress;
 
   return (
-    <section className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
-      <div className="mb-5">
-        <p className="text-sm font-semibold uppercase tracking-wide text-nyaay-saffron">UPI payment proof</p>
-        <h3 className="mt-2 font-display text-2xl font-bold text-nyaay-navy">Submit transaction details</h3>
-        <p className="mt-2 text-sm leading-6 text-nyaay-muted">Pay using any UPI app, then upload the screenshot and UTR/reference number for verification.</p>
+    <div className="space-y-4">
+      <div className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
+        <h3 className="font-display text-lg font-bold text-nyaay-navy mb-4">Upload UPI Payment Receipt</h3>
+
+        {/* Payment Instructions */}
+        <div className="mb-6 rounded-2xl bg-blue-50 border border-blue-200 p-4 text-sm">
+          <p className="font-semibold text-blue-900 mb-2">💳 Payment Instructions</p>
+          <ol className="list-decimal list-inside space-y-1 text-blue-800 text-xs">
+            <li>Open your banking app (PhonePe, Google Pay, Paytm, BHIM)</li>
+            <li>Enter UPI ID or scan QR code</li>
+            <li>Send ₹{expectedAmount} to the advocate</li>
+            <li>Take a screenshot of the success confirmation</li>
+            <li>Upload screenshot below</li>
+          </ol>
+        </div>
+
+        {/* File Upload */}
+        {!verified && (
+          <>
+            {!paymentProof ? (
+              <label className="block cursor-pointer">
+                <div className="rounded-2xl border-2 border-dashed border-nyaay-border bg-nyaay-surface p-6 text-center hover:border-nyaay-saffron transition">
+                  <p className="text-sm font-semibold text-nyaay-navy">
+                    📸 Upload Payment Screenshot
+                  </p>
+                  <p className="text-xs text-nyaay-muted mt-1">
+                    PNG, JPG, or PDF (max 10 MB)
+                  </p>
+                  <input
+                    type="file"
+                    accept=".png,.jpg,.jpeg,.pdf"
+                    onChange={handleFileSelect}
+                    className="sr-only"
+                    aria-label="Payment proof file input"
+                    disabled={requestInProgress}
+                  />
+                </div>
+              </label>
+            ) : (
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-nyaay-border p-3 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="h-12 w-12 rounded-lg bg-gray-200 flex items-center justify-center">
+                      {paymentProof.file.type.startsWith('image') ? (
+                        <img src={paymentProof.preview} alt="Preview" className="h-full w-full rounded-lg object-cover" />
+                      ) : (
+                        <span className="text-xs font-bold">PDF</span>
+                      )}
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-nyaay-navy">{paymentProof.file.name}</p>
+                      <p className="text-xs text-nyaay-muted">{(paymentProof.file.size / 1024).toFixed(2)} KB</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPaymentProof(null);
+                      setError(null);
+                    }}
+                    disabled={requestInProgress}
+                    className="p-2 text-nyaay-muted hover:text-red-600 transition"
+                    aria-label="Remove file"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+
+                {/* Verify Button */}
+                <button
+                  onClick={handleUpload}
+                  disabled={isSubmitDisabled}
+                  className="w-full h-12 rounded-2xl bg-nyaay-saffron text-white font-bold disabled:bg-gray-400 disabled:cursor-not-allowed transition flex items-center justify-center gap-2"
+                  aria-busy={uploading || verifying}
+                  aria-label={verifying ? 'Verifying payment' : 'Verify payment'}
+                >
+                  {uploading || verifying ? (
+                    <>
+                      <Loader className="h-4 w-4 animate-spin" />
+                      {uploading ? 'Uploading...' : 'Verifying...'}
+                    </>
+                  ) : (
+                    'Verify Payment'
+                  )}
+                </button>
+
+                {/* Timeout Warning */}
+                {requestInProgress && (
+                  <p className="text-xs text-nyaay-muted text-center">
+                    ⏱️ This may take up to 30 seconds...
+                  </p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Verified State */}
+        {verified && (
+          <div className="rounded-2xl bg-green-50 border border-green-200 p-4 text-center">
+            <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+            <p className="font-semibold text-green-900">✓ Payment Verified!</p>
+            <p className="text-sm text-green-800 mt-1">
+              Your consultation is confirmed. Check your email for appointment details.
+            </p>
+          </div>
+        )}
+
+        {/* Error Message */}
+        {error && (
+          <div className="rounded-2xl bg-red-50 border border-red-200 p-4 flex gap-3">
+            <AlertCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <p className="font-semibold text-red-900 text-sm">{error}</p>
+              {error.includes('not found') && (
+                <p className="text-xs text-red-800 mt-1">
+                  Please ensure you sent ₹{expectedAmount} to the correct UPI ID.
+                </p>
+              )}
+              {error.includes('timed out') && (
+                <button
+                  onClick={handleUpload}
+                  disabled={isSubmitDisabled}
+                  className="text-xs text-red-700 font-semibold hover:underline mt-2"
+                >
+                  Retry verification →
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-      <div className="rounded-3xl bg-nyaay-surface p-5 text-center">
-        <div className="mx-auto flex h-44 w-44 items-center justify-center rounded-3xl border-2 border-dashed border-nyaay-border bg-white text-sm font-semibold text-nyaay-muted">UPI QR</div>
-        <p className="mt-4 font-bold text-nyaay-navy">nyaaymitr@upi</p>
-        <p className="text-sm text-nyaay-muted">Payee: NyaayMitr</p>
-      </div>
-      <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
-          UTR / transaction reference
-          <input value={utr} onChange={(event) => setUtr(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron" placeholder="Example: UPI123456789" />
-        </label>
-        <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
-          Locked amount
-          <input value={`₹${expectedAmount}`} readOnly aria-readonly="true" className="h-12 rounded-2xl border border-nyaay-border bg-nyaay-surface px-4 text-sm font-bold outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron" />
-        </label>
-      </div>
-      <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-6 text-center text-sm text-nyaay-muted focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-nyaay-saffron">
-        {file ? file.name : 'Upload payment screenshot or PDF'}
-        <span className="mt-1 text-xs">Accepted: PNG, JPG, JPEG, PDF up to 5 MB</span>
-        <input type="file" className="sr-only" accept="image/png,image/jpeg,application/pdf" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-      </label>
-      <button type="button" disabled={uploading || !appointmentId} onClick={handleUpload} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron">
-        {uploading ? 'Submitting...' : 'Submit payment proof'}
-      </button>
-      {status ? <p className="mt-3 text-sm text-nyaay-muted" role="status" aria-live="polite">{status}</p> : null}
-    </section>
+
+      {/* Help Section */}
+      {!verified && (
+        <div className="rounded-2xl bg-nyaay-surface p-4 text-xs text-nyaay-muted">
+          <p className="font-semibold text-nyaay-navy mb-2">💡 Troubleshooting</p>
+          <ul className="space-y-1 list-disc list-inside">
+            <li>Screenshot must show the transaction success confirmation</li>
+            <li>Ensure the UPI amount matches ₹{expectedAmount}</li>
+            <li>Transaction ID or reference number should be visible</li>
+            <li>Contact support if verification fails twice</li>
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
