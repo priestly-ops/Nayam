@@ -3,9 +3,10 @@
 import { usePathname, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
 
-const hiddenRoutes = ['/', '/login'];
+const hiddenRoutes = ['/login'];
 
 function getFallbackHref(pathname: string) {
+  if (pathname === '/') return '/login';
   if (pathname.startsWith('/register')) return '/login';
   if (pathname.startsWith('/lawyers/')) return '/lawyers';
   if (pathname.startsWith('/appointments')) return '/dashboard';
@@ -17,6 +18,7 @@ function getFallbackHref(pathname: string) {
 }
 
 function getBackLabel(pathname: string) {
+  if (pathname === '/') return 'Back to login';
   if (pathname.startsWith('/register')) return 'Back to login';
   if (pathname.startsWith('/lawyers/')) return 'Back to advocate directory';
   if (pathname.startsWith('/lawyers')) return 'Back to dashboard';
