@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { BadgeCheck, Languages, MapPin, Star } from 'lucide-react';
 
 export type LawyerCardProps = {
@@ -39,7 +40,7 @@ export function LawyerCard({ id, name, city, state, specialisations, languages, 
       </div>
       <div className="mt-4 flex items-center justify-between gap-3">
         <p className="text-xs text-nyaay-muted">In-person fee: ₹{inPersonFee}</p>
-        <a href={`/appointments/new?lawyerId=${id}`} className="rounded-2xl bg-nyaay-navy px-4 py-2 text-sm font-bold text-white">Book</a>
+        <Link href={`/lawyers/${id}/book`} className="rounded-2xl bg-nyaay-navy px-4 py-2 text-sm font-bold text-white">Book</Link>
       </div>
     </article>
   );
