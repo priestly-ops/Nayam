@@ -1,4 +1,26 @@
+'use client';
+
+import { useState } from 'react';
+import { useDocuments } from '@/hooks/useDocuments';
+
 export function PaymentProofUploader() {
+  const { uploadPaymentProof } = useDocuments();
+  const [file, setFile] = useState<File | null>(null);
+  const [status, setStatus] = useState<string | null>(null);
+
+  async function handleUpload() {
+    if (!file) {
+      setStatus('Please choose a screenshot or receipt first.');
+      return;
+    }
+    try {
+      const path = await uploadPaymentProof(file);
+      setStatus(`Payment proof uploaded: ${path}`);
+    } catch (error) {
+      setStatus(error instanceof Error ? error.message : 'Upload failed');
+    }
+  }
+
   return (
     <section className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
       <div className="mb-5">
@@ -16,10 +38,11 @@ export function PaymentProofUploader() {
         <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Amount paid" />
       </div>
       <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-6 text-center text-sm text-nyaay-muted">
-        Upload payment screenshot
-        <input type="file" className="sr-only" accept="image/png,image/jpeg,application/pdf" />
+        {file ? file.name : 'Upload payment screenshot'}
+        <input type="file" className="sr-only" accept="image/png,image/jpeg,application/pdf" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
       </label>
-      <button className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card">Submit payment proof</button>
+      <button type="button" onClick={handleUpload} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card">Submit payment proof</button>
+      {status ? <p className="mt-3 text-sm text-nyaay-muted">{status}</p> : null}
     </section>
   );
 }
