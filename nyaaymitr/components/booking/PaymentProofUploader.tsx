@@ -1,21 +1,37 @@
 'use client';
 
 import { useState } from 'react';
+import { useBooking } from '@/hooks/useBooking';
 import { useDocuments } from '@/hooks/useDocuments';
 
-export function PaymentProofUploader() {
+export function PaymentProofUploader({ appointmentId }: { appointmentId?: string }) {
   const { uploadPaymentProof } = useDocuments();
+  const { submitUpiPaymentProof } = useBooking();
   const [file, setFile] = useState<File | null>(null);
+  const [utr, setUtr] = useState('');
+  const [amount, setAmount] = useState('1000');
   const [status, setStatus] = useState<string | null>(null);
 
   async function handleUpload() {
-    if (!file) {
-      setStatus('Please choose a screenshot or receipt first.');
+    if (!appointmentId) {
+      setStatus('Create an appointment before submitting payment proof.');
+      return;
+    }
+    if (!file || !utr) {
+      setStatus('Please add UTR and choose a screenshot first.');
       return;
     }
     try {
       const path = await uploadPaymentProof(file);
-      setStatus(`Payment proof uploaded: ${path}`);
+      await submitUpiPaymentProof({
+        appointmentId,
+        amount: Number(amount),
+        upiId: 'nyaaymitr@upi',
+        upiPayeeName: 'NyaayMitr',
+        upiTransactionRef: utr,
+        paymentScreenshotPath: path,
+      });
+      setStatus('Payment proof submitted for verification.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Upload failed');
     }
@@ -34,8 +50,8 @@ export function PaymentProofUploader() {
         <p className="text-sm text-nyaay-muted">Payee: NyaayMitr</p>
       </div>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="UTR / transaction reference" />
-        <input className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Amount paid" />
+        <input value={utr} onChange={(event) => setUtr(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="UTR / transaction reference" />
+        <input value={amount} onChange={(event) => setAmount(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Amount paid" />
       </div>
       <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-6 text-center text-sm text-nyaay-muted">
         {file ? file.name : 'Upload payment screenshot'}
