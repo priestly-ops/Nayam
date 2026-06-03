@@ -1,5 +1,8 @@
+'use client';
+
 import Link from 'next/link';
-import { CalendarCheck, FileCheck2, Gavel, IndianRupee, ShieldCheck, UserCheck } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ArrowLeft, CalendarCheck, FileCheck2, Gavel, IndianRupee, ShieldCheck, UserCheck } from 'lucide-react';
 
 const advocateActions = [
   {
@@ -29,9 +32,30 @@ const advocateActions = [
 ];
 
 export default function AdvocateDashboardPage() {
+  const router = useRouter();
+
+  function handleBack() {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+      return;
+    }
+
+    router.push('/dashboard');
+  }
+
   return (
-    <main className="min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
-      <section className="mx-auto max-w-7xl space-y-6">
+    <main className="relative min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
+      <button
+        type="button"
+        onClick={handleBack}
+        aria-label="Back to client dashboard"
+        className="fixed left-5 top-5 z-[9999] inline-flex items-center gap-2 rounded-full bg-nyaay-saffron px-4 py-2 text-sm font-bold text-white shadow-lg transition hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+      >
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        <span>Back</span>
+      </button>
+
+      <section className="mx-auto max-w-7xl space-y-6 pt-14">
         <header className="rounded-3xl bg-nyaay-navy p-6 text-white shadow-soft md:p-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div>
