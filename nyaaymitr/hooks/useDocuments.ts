@@ -45,7 +45,7 @@ export function useDocuments() {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User must be signed in');
 
-    const storagePath = `${userData.user.id}/${Date.now()}-${file.name}`;
+    const storagePath = `${userData.user.id}/${appointmentId ?? 'general'}/${Date.now()}-${file.name}`;
 
     const uploadResult = await supabase.storage
       .from('legal-documents')
@@ -60,7 +60,7 @@ export function useDocuments() {
       file_type: file.type || 'application/octet-stream',
       file_size: file.size,
       storage_path: storagePath,
-      is_encrypted: true,
+      is_encrypted: false,
     });
 
     if (insertResult.error) throw insertResult.error;
@@ -68,14 +68,14 @@ export function useDocuments() {
     return storagePath;
   }
 
-  async function uploadPaymentProof(file: File) {
+  async function uploadPaymentProof(file: File, appointmentId: string) {
     const { data: userData } = await supabase.auth.getUser();
     if (!userData.user) throw new Error('User must be signed in');
 
-    const storagePath = `${userData.user.id}/payment-proofs/${Date.now()}-${file.name}`;
+    const storagePath = `${userData.user.id}/${appointmentId}/${Date.now()}-${file.name}`;
 
     const uploadResult = await supabase.storage
-      .from('legal-documents')
+      .from('payment-proofs')
       .upload(storagePath, file, { upsert: false });
 
     if (uploadResult.error) throw uploadResult.error;
