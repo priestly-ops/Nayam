@@ -4,7 +4,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { ArrowLeft, Scale } from 'lucide-react';
 import { supabase } from '@/lib/supabase/client';
-
+import { BackButton } from '@/components/common/BackButton';
+<BackButton fallbackHref="/login" label="Back to login" />
 type RegisterRole = 'client' | 'advocate';
 
 const inputClass =
