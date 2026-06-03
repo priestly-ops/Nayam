@@ -1,22 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useBooking } from '@/hooks/useBooking';
 import { useDocuments } from '@/hooks/useDocuments';
 
-export function PaymentProofUploader({ appointmentId }: { appointmentId?: string }) {
+type PaymentProofUploaderProps = {
+  appointmentId?: string;
+  expectedAmount: number;
+};
+
+export function PaymentProofUploader({ appointmentId, expectedAmount }: PaymentProofUploaderProps) {
   const { uploadPaymentProof } = useDocuments();
   const { submitUpiPaymentProof } = useBooking();
   const [file, setFile] = useState<File | null>(null);
   const [utr, setUtr] = useState('');
-  const [amount, setAmount] = useState('1000');
   const [status, setStatus] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    setStatus(null);
+  }, [appointmentId, expectedAmount]);
 
   function validatePaymentForm() {
     if (!appointmentId) return 'Create an appointment before submitting payment proof.';
     if (!utr.trim() || utr.trim().length < 8) return 'Please enter a valid UTR or transaction reference.';
-    if (!amount || Number(amount) <= 0) return 'Please enter a valid amount paid.';
     if (!file) return 'Please choose a payment screenshot first.';
     if (file.size > 5 * 1024 * 1024) return 'Payment proof file must be under 5 MB.';
     const allowedTypes = ['image/png', 'image/jpeg', 'application/pdf'];
@@ -37,7 +44,7 @@ export function PaymentProofUploader({ appointmentId }: { appointmentId?: string
       const path = await uploadPaymentProof(file!, appointmentId!);
       await submitUpiPaymentProof({
         appointmentId: appointmentId!,
-        amount: Number(amount),
+        amount: expectedAmount,
         upiId: 'nyaaymitr@upi',
         upiPayeeName: 'NyaayMitr',
         upiTransactionRef: utr.trim(),
@@ -64,17 +71,24 @@ export function PaymentProofUploader({ appointmentId }: { appointmentId?: string
         <p className="text-sm text-nyaay-muted">Payee: NyaayMitr</p>
       </div>
       <div className="mt-5 grid gap-4 md:grid-cols-2">
-        <input value={utr} onChange={(event) => setUtr(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="UTR / transaction reference" />
-        <input value={amount} onChange={(event) => setAmount(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron" placeholder="Amount paid" />
+        <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
+          UTR / transaction reference
+          <input value={utr} onChange={(event) => setUtr(event.target.value)} className="h-12 rounded-2xl border border-nyaay-border px-4 text-sm outline-none focus:border-nyaay-saffron focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron" placeholder="Example: UPI123456789" />
+        </label>
+        <label className="grid gap-2 text-sm font-semibold text-nyaay-navy">
+          Locked amount
+          <input value={`₹${expectedAmount}`} readOnly aria-readonly="true" className="h-12 rounded-2xl border border-nyaay-border bg-nyaay-surface px-4 text-sm font-bold outline-none focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron" />
+        </label>
       </div>
-      <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-6 text-center text-sm text-nyaay-muted">
-        {file ? file.name : 'Upload payment screenshot'}
+      <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border border-dashed border-nyaay-border bg-nyaay-surface p-6 text-center text-sm text-nyaay-muted focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-nyaay-saffron">
+        {file ? file.name : 'Upload payment screenshot or PDF'}
+        <span className="mt-1 text-xs">Accepted: PNG, JPG, JPEG, PDF up to 5 MB</span>
         <input type="file" className="sr-only" accept="image/png,image/jpeg,application/pdf" onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
       </label>
-      <button type="button" disabled={uploading || !appointmentId} onClick={handleUpload} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card disabled:cursor-not-allowed disabled:opacity-60">
+      <button type="button" disabled={uploading || !appointmentId} onClick={handleUpload} className="mt-5 h-12 w-full rounded-2xl bg-nyaay-saffron font-bold text-white shadow-card disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-nyaay-saffron">
         {uploading ? 'Submitting...' : 'Submit payment proof'}
       </button>
-      {status ? <p className="mt-3 text-sm text-nyaay-muted">{status}</p> : null}
+      {status ? <p className="mt-3 text-sm text-nyaay-muted" role="status" aria-live="polite">{status}</p> : null}
     </section>
   );
 }
