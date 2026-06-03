@@ -3,6 +3,10 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase/client';
 
+type LawyerProfile = {
+  full_name: string | null;
+};
+
 export type LawyerListItem = {
   id: string;
   city: string;
@@ -14,8 +18,19 @@ export type LawyerListItem = {
   rating: number;
   total_reviews: number;
   is_verified: boolean;
-  profiles?: { full_name: string | null } | null;
+  profiles?: LawyerProfile | null;
 };
+
+type LawyerListRow = Omit<LawyerListItem, 'profiles'> & {
+  profiles?: LawyerProfile | LawyerProfile[] | null;
+};
+
+function normalizeLawyer(row: LawyerListRow): LawyerListItem {
+  return {
+    ...row,
+    profiles: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles ?? null,
+  };
+}
 
 export function useLawyers() {
   const [lawyers, setLawyers] = useState<LawyerListItem[]>([]);
@@ -32,7 +47,7 @@ export function useLawyers() {
         .order('rating', { ascending: false });
 
       if (error) setError(error.message);
-      else setLawyers((data ?? []) as LawyerListItem[]);
+      else setLawyers(((data ?? []) as LawyerListRow[]).map(normalizeLawyer));
       setLoading(false);
     }
 
