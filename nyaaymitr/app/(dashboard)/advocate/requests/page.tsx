@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import { Gavel, Inbox } from 'lucide-react';
+import { BackButton } from '@/components/common/BackButton';
 
 export default function AdvocateRequestsPage() {
   return (
-    <main className="min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
-      <section className="mx-auto max-w-6xl space-y-6">
+    <main className="relative min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
+      <div className="fixed left-5 top-5 z-[9999]">
+        <BackButton fallbackHref="/advocate/dashboard" label="Back" variant="floating" />
+      </div>
+
+      <section className="mx-auto max-w-6xl space-y-6 pt-14">
         <header className="rounded-3xl bg-white p-6 shadow-card ring-1 ring-nyaay-border/70">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-nyaay-saffron">
