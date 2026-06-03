@@ -2,19 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-nyaay-surface text-nyaay-cream;
+:root {
+  --focus-outline: 3px solid #fe6a2a;
+  --disabled-bg: #e5e7eb;
+  --disabled-text: #4b5563;
 }
 
-:where(a, button, input, select, textarea):focus-visible {
-  outline: 3px solid #fe6a2a;
+html {
+  scroll-behavior: smooth;
+  overflow-y: scroll;
+}
+
+body {
+  @apply bg-nyaay-surface text-nyaay-cream;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: var(--focus-outline);
   outline-offset: 3px;
 }
 
+:where(a, button, input, select, textarea, [tabindex]):focus:not(:focus-visible) {
+  outline: none;
+}
+
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
+button:disabled:not([class*='bg-']) {
+  background-color: var(--disabled-bg);
+  color: var(--disabled-text);
+}
+
+input,
+select,
+textarea {
+  font-size: 16px;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+.skip-to-main {
+  position: absolute;
+  left: 0;
+  top: -48px;
+  z-index: 1000;
+  border-radius: 0 0 0.5rem 0;
+  background: #fe6a2a;
+  color: white;
+  padding: 0.5rem 0.75rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-to-main:focus {
+  top: 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  body * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
 }
