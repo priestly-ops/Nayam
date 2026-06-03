@@ -23,27 +23,30 @@ export default function RegisterPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
 
+  function normalizeIndianPhone(value: string) {
+    const digits = value.replace(/\D/g, '');
+    if (digits.startsWith('91') && digits.length === 12) return '+' + digits;
+    if (digits.length === 10) return '+91' + digits;
+    if (value.trim().startsWith('+')) return value.trim();
+    return '+91' + digits;
+  }
+
   function validateForm() {
+    const normalizedPhone = normalizeIndianPhone(phone);
     if (fullName.trim().length < 2) return 'Please enter your full name.';
-    if (!email.trim()) return 'Please enter your email address.';
+    if (!/^\S+@\S+\.\S+$/.test(email.trim())) return 'Please enter a valid email address.';
     if (password.length < 8) return 'Password must be at least 8 characters.';
-    if (!phone.trim()) return 'Please enter your phone number.';
+    if (!/^\+91\d{10}$/.test(normalizedPhone)) return 'Please enter a valid 10-digit Indian mobile number.';
     if (!city.trim() || !state.trim()) return 'Please enter your city and state.';
     if (!acceptedTerms) return 'Please accept the terms and privacy policy.';
     if (role === 'advocate') {
       if (!barCouncilId.trim()) return 'Please enter your Bar Council ID.';
       if (!barCouncilState.trim()) return 'Please enter your Bar Council state.';
-      if (!enrollmentYear.trim()) return 'Please enter your enrollment year.';
+      if (!enrollmentYear.trim() || Number.isNaN(Number(enrollmentYear))) return 'Please enter a valid enrollment year.';
+      if (Number(enrollmentYear) < 1950 || Number(enrollmentYear) > new Date().getFullYear()) return 'Please enter a realistic enrollment year.';
       if (!specialisations.trim()) return 'Please enter at least one specialisation.';
     }
     return null;
-  }
-
-  function normalizeIndianPhone(value: string) {
-    const digits = value.replace(/\D/g, '');
-    if (digits.startsWith('91') && digits.length === 12) return '+' + digits;
-    if (digits.length === 10) return '+91' + digits;
-    return value.trim();
   }
 
   async function handleRegister() {
@@ -53,6 +56,8 @@ export default function RegisterPage() {
       return;
     }
 
+    const normalizedPhone = normalizeIndianPhone(phone);
+
     try {
       setLoading(true);
       setStatus(null);
@@ -60,11 +65,11 @@ export default function RegisterPage() {
       const { data: authData, error: signUpError } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        phone: normalizeIndianPhone(phone),
         options: {
           data: {
             full_name: fullName.trim(),
-            role,
+            phone_number: normalizedPhone,
+            role: role === 'advocate' ? 'lawyer' : 'client',
           },
         },
       });
@@ -72,19 +77,19 @@ export default function RegisterPage() {
       if (signUpError) throw signUpError;
       const userId = authData.user?.id;
       if (!userId) {
-        setStatus('Registration started. Please verify your email or phone, then sign in.');
+        setStatus('Registration started. Please verify your email, then sign in.');
         return;
       }
 
       const { error: profileError } = await supabase.from('profiles').upsert({
         id: userId,
         full_name: fullName.trim(),
-        phone: normalizeIndianPhone(phone),
-        email: email.trim(),
+        phone_number: normalizedPhone,
         preferred_language: preferredLanguage,
         role: role === 'advocate' ? 'lawyer' : 'client',
         city: city.trim(),
         state: state.trim(),
+        is_active: true,
       });
 
       if (profileError) throw profileError;
@@ -109,17 +114,19 @@ export default function RegisterPage() {
         if (lawyerError) throw lawyerError;
 
         if (lawyer?.id) {
-          await supabase.from('verification_requests').insert({
+          const { error: verificationError } = await supabase.from('verification_requests').insert({
             lawyer_id: lawyer.id,
             status: 'submitted',
             submitted_at: new Date().toISOString(),
           });
+
+          if (verificationError) throw verificationError;
         }
       }
 
       setStatus(role === 'advocate'
         ? 'Account created. Your advocate profile has been submitted for verification.'
-        : 'Account created. Please check your email or phone if verification is required.');
+        : 'Account created. Please check your email if verification is required.');
     } catch (error) {
       setStatus(error instanceof Error ? error.message : 'Could not create account.');
     } finally {
