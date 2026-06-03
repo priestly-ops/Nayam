@@ -70,12 +70,29 @@ const fallbackLawyers: LawyerListItem[] = [
 function normalizeLawyer(row: LawyerListRow): LawyerListItem {
   return {
     ...row,
+    specialisations: row.specialisations?.length ? row.specialisations : ['General Legal Consultation'],
+    languages: row.languages?.length ? row.languages : ['English'],
+    consultation_fee_online: row.consultation_fee_online ?? 0,
+    consultation_fee_inperson: row.consultation_fee_inperson ?? 0,
+    rating: Number(row.rating ?? 0),
+    total_reviews: row.total_reviews ?? 0,
     profiles: Array.isArray(row.profiles) ? row.profiles[0] ?? null : row.profiles ?? null,
   };
 }
 
+function mergeWithFallback(lawyers: LawyerListItem[]) {
+  const existingIds = new Set(lawyers.map((lawyer) => lawyer.id));
+  const missingFallbacks = fallbackLawyers.filter((lawyer) => !existingIds.has(lawyer.id));
+
+  if (lawyers.length >= 3) {
+    return lawyers;
+  }
+
+  return [...lawyers, ...missingFallbacks].slice(0, 6);
+}
+
 export function useLawyers() {
-  const [lawyers, setLawyers] = useState<LawyerListItem[]>([]);
+  const [lawyers, setLawyers] = useState<LawyerListItem[]>(fallbackLawyers);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -93,10 +110,9 @@ export function useLawyers() {
       if (error) {
         console.error('Unable to load lawyers:', error.message);
         setLawyers(fallbackLawyers);
-        setError(null);
       } else {
         const verifiedLawyers = ((data ?? []) as LawyerListRow[]).map(normalizeLawyer);
-        setLawyers(verifiedLawyers.length > 0 ? verifiedLawyers : fallbackLawyers);
+        setLawyers(mergeWithFallback(verifiedLawyers));
       }
 
       setLoading(false);
