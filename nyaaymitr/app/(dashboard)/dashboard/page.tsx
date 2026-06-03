@@ -1,5 +1,9 @@
+'use client';
+
 import { CalendarCheck, FileText, Scale, ShieldCheck } from 'lucide-react';
+import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { LifecycleTracker } from '@/components/shared/LifecycleTracker';
+import { useAppointments } from '@/hooks/useAppointments';
 
 const actions = [
   { title: 'Find Advocate', href: '/lawyers', icon: Scale },
@@ -9,6 +13,9 @@ const actions = [
 ];
 
 export default function DashboardPage() {
+  const { appointments, loading } = useAppointments();
+  const nextAppointment = appointments[0];
+
   return (
     <main className="min-h-screen bg-nyaay-surface px-5 py-6 text-nyaay-navy md:px-10">
       <section className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1fr_380px]">
@@ -23,23 +30,29 @@ export default function DashboardPage() {
               const Icon = action.icon;
               return (
                 <a key={action.title} href={action.href} className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
-                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-nyaay-saffron">
-                    <Icon className="h-6 w-6" />
-                  </div>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-nyaay-saffron"><Icon className="h-6 w-6" /></div>
                   <p className="font-bold">{action.title}</p>
                   <p className="mt-1 text-sm text-nyaay-muted">Continue securely</p>
                 </a>
               );
             })}
           </div>
+          <NotificationPanel />
         </div>
         <aside className="space-y-6">
           <div className="rounded-3xl bg-white p-5 shadow-card ring-1 ring-nyaay-border/70">
             <p className="text-sm font-semibold text-nyaay-muted">Upcoming appointment</p>
-            <h2 className="mt-2 font-display text-2xl font-bold">No confirmed appointment</h2>
-            <p className="mt-2 text-sm text-nyaay-muted">Confirmed consultation details will appear here after payment verification.</p>
+            {loading ? <h2 className="mt-2 font-display text-2xl font-bold">Loading...</h2> : null}
+            {!loading && nextAppointment ? (
+              <div>
+                <h2 className="mt-2 font-display text-2xl font-bold">{nextAppointment.issue_category ?? 'Legal consultation'}</h2>
+                <p className="mt-2 text-sm text-nyaay-muted">{nextAppointment.appointment_date} at {nextAppointment.appointment_time}</p>
+                <p className="mt-2 text-sm font-semibold text-nyaay-saffron">{nextAppointment.status}</p>
+              </div>
+            ) : null}
+            {!loading && !nextAppointment ? <p className="mt-2 text-sm text-nyaay-muted">Confirmed consultation details will appear here after payment verification.</p> : null}
           </div>
-          <LifecycleTracker currentStage="requested" />
+          <LifecycleTracker currentStage={nextAppointment?.lifecycle_stage ?? 'requested'} />
         </aside>
       </section>
     </main>
