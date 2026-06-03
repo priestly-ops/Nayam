@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase/client';
 export type NotificationItem = {
   id: string;
   title: string;
-  message: string;
+  body: string;
   is_read: boolean;
   created_at: string;
 };
@@ -27,7 +27,7 @@ export function useNotifications() {
 
       const { data } = await supabase
         .from('notifications')
-        .select('id, title, message, is_read, created_at')
+        .select('id, title, body, is_read, created_at')
         .eq('user_id', userData.user.id)
         .order('created_at', { ascending: false });
 
@@ -36,18 +36,10 @@ export function useNotifications() {
 
       channel = supabase
         .channel('user-notifications')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-          },
-          (payload) => {
-            const item = payload.new as NotificationItem;
-            setNotifications((current) => [item, ...current]);
-          },
-        )
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'notifications' }, (payload) => {
+          const item = payload.new as NotificationItem;
+          if (item.id) setNotifications((current) => [item, ...current]);
+        })
         .subscribe();
     }
 
